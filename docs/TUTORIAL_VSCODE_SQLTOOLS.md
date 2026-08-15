@@ -103,6 +103,48 @@ Así se ve el formulario completo, con las opciones del driver abajo
 Abajo del formulario: **TEST CONNECTION** debe responder *"Successfully
 connected!"* en verde; luego **SAVE CONNECTION** y **CONNECT NOW**.
 
+> **Si le sale este error al conectar o al hacer TEST:**
+>
+> ```
+> Error opening connection Failed to connect to localhost:11463
+> - self signed certificate; if the root CA is installed locally,
+> try running Node.js with --use-system-ca
+> ```
+>
+> Es el certificado autofirmado del contenedor: la conexión quedó SIN el
+> `trustServerCertificate`. Arréglelo en este orden:
+>
+> 1. **Verifique el check:** clic derecho en la conexión (panel del
+>    cilindro) → **Edit connection** → baje hasta *MSSQL Tedious driver
+>    options* → marque `trustServerCertificate` → **SAVE CONNECTION** y
+>    pruebe de nuevo.
+> 2. **Si el error sigue** (algunas versiones recientes del driver ignoran
+>    el check del asistente): edite la conexión directamente en el
+>    settings.json — `Ctrl+Shift+P` → *Preferences: Open User Settings
+>    (JSON)* → busque `sqltools.connections` y deje su conexión con el
+>    bloque `mssqlOptions` así:
+>
+>    ```json
+>    "sqltools.connections": [
+>      {
+>        "name": "bdfacturas (csharp)",
+>        "driver": "MSSQL",
+>        "server": "localhost",
+>        "port": 11463,
+>        "database": "bdfacturas_sqlserver_local",
+>        "username": "sa",
+>        "password": "Paradigmas123!",
+>        "mssqlOptions": { "encrypt": true, "trustServerCertificate": true }
+>      }
+>    ]
+>    ```
+>
+>    Guarde el archivo y conéctese de nuevo (no hace falta reiniciar VS Code).
+> 3. **Último recurso** (solo válido porque esta BD es local y de juguete):
+>    en ese mismo bloque cambie a `"encrypt": false` — sin cifrado no hay
+>    certificado que validar. En un servidor real NUNCA se apaga el cifrado;
+>    se instala un certificado de verdad.
+
 > En el panel CONNECTIONS pueden convivir varias conexiones suyas a
 > distintos servidores — cada una con su motor y su puerto, todas
 > conectables a la vez.
