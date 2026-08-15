@@ -184,7 +184,7 @@ host; Kubernetes cuando se necesita más de una máquina. **El puente
 conceptual:** ambos son YAML declarativo describiendo estado deseado —
 quien domina un compose ya entiende la mitad conceptual de K8s.
 
-## 7. Los comandos que este curso usa (chuleta)
+## 7. Los comandos que este curso usa (el "pastel" — en inglés: cheat sheet)
 
 ```powershell
 docker ps                        # qué está corriendo (con -a: también lo detenido)
