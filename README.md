@@ -76,7 +76,7 @@ es **reconstruirla usted mismo, en una carpeta propia (fuera del clon)**,
 siguiendo las especificaciones — con o sin ayuda de IA:
 
 > 🤖 ¿Va a trabajar con IA? Siga la **[Guía para construir la versión con
-> IA](docs/GUIA_IA.md)** — cubre los dos caminos con su prompt exacto listo
+> IA](docs/spec_kit/versiones/v1_producto_sqlserver/GUIA_IA.md)** — cubre los dos caminos con su prompt exacto listo
 > para copiar: **chat web** (Gemini, DeepSeek, ChatGPT: qué archivos
 > subirle) e **IDE agéntico** (Antigravity, Cursor, Claude Code: cómo
 > supervisar al agente).
@@ -134,7 +134,8 @@ proyecto_aplicacion_y_servicios_web1/
 ├── docs/
 │   ├── spec_kit/                # LAS ESPECIFICACIONES: constitución permanente +
 │   │                            #   una carpeta de specs por versión (v1, v2, …)
-│   ├── GUIA_IA.md               # Cómo reconstruir la versión desde 0 con ayuda de una IA
+│   │                            #   + la GUIA_IA.md de ESA versión (cómo
+│   │                            #   construirla con ayuda de una IA)
 │   ├── FLUJO_DE_UNA_PETICION.md # Dónde "está" el GET, dónde se captura el POST
 │   ├── TUTORIAL_SSMS.md         # Administrar la BD con SQL Server Management Studio
 │   ├── TUTORIAL_VSCODE_SQLTOOLS.md # Administrar la BD desde VS Code (SQLTools)
