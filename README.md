@@ -26,8 +26,8 @@ curso, funcionando** — usted la ejecuta, la estudia y luego la
 En la terminal integrada de VS Code (*Terminal → New Terminal*, PowerShell):
 
 ```powershell
-git clone https://github.com/ccastro2050/proyecto_aplicacion_y_servicios_web.git
-cd proyecto_aplicacion_y_servicios_web
+git clone https://github.com/ccastro2050/proyecto_aplicacion_y_servicios_web1.git
+cd proyecto_aplicacion_y_servicios_web1
 docker compose up -d --build
 ```
 
@@ -102,7 +102,7 @@ siguiendo las especificaciones — con o sin ayuda de IA:
 Qué es cada carpeta y cada archivo, y para qué sirve:
 
 ```
-proyecto_aplicacion_y_servicios_web/
+proyecto_aplicacion_y_servicios_web1/
 ├── docker-compose.yml           # TODO el sistema declarado: SQL Server + inicializador
 │                                #   + API (el "un solo comando" del proyecto)
 ├── db/
