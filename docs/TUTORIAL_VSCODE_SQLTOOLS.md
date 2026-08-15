@@ -140,10 +140,17 @@ connected!"* en verde; luego **SAVE CONNECTION** y **CONNECT NOW**.
 >    ```
 >
 >    Guarde el archivo y conéctese de nuevo (no hace falta reiniciar VS Code).
-> 3. **Último recurso** (solo válido porque esta BD es local y de juguete):
->    en ese mismo bloque cambie a `"encrypt": false` — sin cifrado no hay
->    certificado que validar. En un servidor real NUNCA se apaga el cifrado;
->    se instala un certificado de verdad.
+> 3. **Si TAMBIÉN falla con el settings.json** (regresión conocida de
+>    versiones recientes del driver): instale una versión anterior de la
+>    extensión del driver — panel de **Extensiones** (`Ctrl+Shift+X`) →
+>    busque **SQLTools Microsoft SQL Server/Azure** → clic en el
+>    engranaje ⚙ → **Install Specific Version…** → elija una versión
+>    anterior a la instalada. VS Code la deja fijada y no la vuelve a
+>    actualizar sola.
+> 4. **Último recurso** (solo válido porque esta BD es local y de juguete):
+>    en el bloque del paso 2 cambie a `"encrypt": false` — sin cifrado no
+>    hay certificado que validar. En un servidor real NUNCA se apaga el
+>    cifrado; se instala un certificado de verdad.
 
 > En el panel CONNECTIONS pueden convivir varias conexiones suyas a
 > distintos servidores — cada una con su motor y su puerto, todas
