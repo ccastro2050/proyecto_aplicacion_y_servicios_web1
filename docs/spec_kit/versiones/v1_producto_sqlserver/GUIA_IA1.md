@@ -68,6 +68,13 @@ proyecto (ver A.2, paso 5).
 **No suba nada más.** El mapa de versiones no hace falta (y le revelaría a
 la IA lo que viene — la regla es que la v1 no anticipa).
 
+> **¿Y el `9_checklist.md` que ve en la misma carpeta?** Tampoco se sube:
+> no es material para la IA. Es la lista con la que **usted** revisa que la
+> especificación esté completa antes de construir — la compuerta 3 del
+> método ([SDD_SPECKIT §2.2](../../../SDD_SPECKIT.md)). Úsela además como
+> prueba de lectura: si no puede responder por qué `?limite=0` responde 400
+> y no 422, todavía no leyó la spec.
+
 ### A.2 Prepare SU proyecto (ANTES de abrir el chat)
 
 **Ojo: NO se construye dentro de la carpeta clonada.** El repositorio
@@ -223,8 +230,10 @@ REGLAS DE TRABAJO (no negociables):
    ni paquetes NuGet extra (solo Microsoft.Data.SqlClient y
    Swashbuckle.AspNetCore), ni Entity
    Framework, ni Swagger, ni tablas extra, ni motores extra, ni fábricas
-   "por si acaso", ni mejoras de tu cosecha. Si crees que falta algo,
-   pregúntame antes.
+   "por si acaso", ni mejoras de tu cosecha. Si crees que falta algo, o si
+   un documento admite dos lecturas, PREGÚNTAME antes: no lo resuelvas por
+   tu cuenta ni "asumas" nada. Yo anotaré la respuesta en la sección 6
+   (Clarificaciones) de mi 2_spec.md.
 2. Vamos a seguir 8_tasks.md FASE POR FASE, en orden. En cada fase:
    a. Me explicas en 3-5 líneas qué vamos a hacer y por qué.
    b. Me entregas los archivos de la fase DE A UNO: primero la ruta exacta
@@ -304,6 +313,14 @@ que entendiste el alcance) y luego arranca con la Fase 0.
    nuevo, vuelva a subir los 8 documentos y agregue al prompt: "Ya tengo
    construidas las fases 0 a N; te pego el código actual. Continuemos en
    la fase N+1" (y pegue sus archivos).
+7. **Si la IA ASUME algo que la spec no dice, párela.** Lo va a mencionar
+   de pasada — "asumo que el borrado es físico", "por defecto devuelvo
+   409"— y ahí está el peligro, porque suena a detalle y es una
+   **ambigüedad de la especificación**. Pídale la pregunta explícita,
+   decida usted, y **anote la respuesta en la sección 6 (Clarificaciones)
+   de su `2_spec.md`** — no solo en el chat. El chat se cierra; la spec
+   queda. Ese hábito es, a mano, lo que en Spec Kit hace el comando
+   `clarify` ([SDD_SPECKIT §3.3](../../../SDD_SPECKIT.md)).
 
 ---
 
@@ -351,7 +368,10 @@ REGLAS (no negociables):
    ni paquetes NuGet extra (solo Microsoft.Data.SqlClient y
    Swashbuckle.AspNetCore), ni Entity
    Framework, ni Swagger, ni tablas extra, ni motores extra, ni fábricas
-   "por si acaso". Si crees que falta algo, pregúntame antes.
+   "por si acaso". Si crees que falta algo, o si un documento admite dos
+   lecturas, PREGÚNTAME antes: no lo resuelvas por tu cuenta ni "asumas"
+   nada. Yo anotaré la respuesta en la sección 6 (Clarificaciones) de mi
+   2_spec.md.
 2. Sigue 8_tasks.md fase por fase, en orden. Al terminar cada fase, EJECUTA
    su verificación (la que dice la propia fase), muéstrame el resultado
    real, y espera mi OK antes de pasar a la siguiente.
@@ -376,5 +396,9 @@ REGLAS (no negociables):
   3_plan.md §2? ¿Tiene los comentarios en español? ¿No agregó paquetes?
 - **Freno de emergencia:** si el agente hace varias fases de un tirón,
   deténgalo y pídale: "vuelve a la fase N y muéstrame su verificación".
+- **Cace las suposiciones:** cuando el agente diga "asumo que…" o "por
+  defecto voy a…", deténgalo. Eso no es un detalle de implementación: es
+  una ambigüedad de la spec. Decida usted y anote la respuesta en la
+  sección 6 (Clarificaciones) de su `2_spec.md`.
 - **No le crea "terminado":** pídale la evidencia (la salida real de los
   comandos). El criterio de cierre es el smoke test corrido y en verde.
