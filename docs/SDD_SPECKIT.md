@@ -345,7 +345,7 @@ Las tres compuertas, en detalle:
 
 > **La tercera es la que hoy nos falta.** Es una lista de chequeo **sobre
 > la especificación, no sobre el código**, y las casillas las marca una
-> persona (§3.3). Sus preguntas son de este tipo: *¿cada criterio de
+> persona (§3.4). Sus preguntas son de este tipo: *¿cada criterio de
 > aceptación dice un número o un código HTTP concreto? · ¿algún requisito
 > usa "rápido", "amigable" o "eficiente" sin definirlos? · ¿hay dos
 > requisitos que se contradicen? · ¿algún criterio no se puede verificar
@@ -573,7 +573,109 @@ Dos diferencias de forma que conviene ver: `contracts` es un
 un `.md` en prosa como nuestro `6_contracts.md`; y las aclaraciones no son
 un documento aparte — viven **dentro** de `spec.md`.
 
-### 3.3 Qué mejora frente a nuestro kit a mano — y qué no
+### 3.3 Los tres comandos que NO producen documento, con ejemplo
+
+Esto es lo que más confunde al principio: de los nueve comandos, solo
+cinco dejan un archivo. **`clarify`, `analyze` y `converge` no crean
+ningún `.md`** — y son, justamente, los que más valor agregan. Van los
+tres con un ejemplo armado sobre la v1 de este repositorio.
+
+#### `clarify` — pregunta ANTES de que usted planee
+
+Lee la spec, detecta lo que está a medio definir y **pregunta**, una cosa
+a la vez. Cuando usted responde, no le devuelve un texto para que lo
+pegue: **edita `spec.md`** y deja la respuesta adentro.
+
+```text
+La spec dice:
+    RF6 — Eliminar producto
+    DELETE /api/producto/{codigo}. Devuelve filasEliminadas;
+    inexistente -> 404.
+
+clarify pregunta:
+    El borrado de producto, ¿es físico o lógico?
+      a) Físico: la fila desaparece de la tabla.
+      b) Lógico: se marca inactiva y deja de listarse.
+    Impacto si es (b): cambia el contrato del DELETE, obliga a una
+    columna de estado en 5_data_model y reescribe el criterio 4.
+
+Usted responde:  a
+
+clarify NO crea un archivo: escribe dentro de 2_spec.md
+    ## Clarificaciones
+    C5 — DELETE, ¿físico o lógico? -> Físico: la tabla producto no
+    tiene columna de estado. El borrado lógico llega con la anulación
+    de facturas, en una versión posterior.
+```
+
+**A mano, en este curso:** eso es exactamente la
+[sección 6 de 2_spec.md](spec_kit/versiones/v1_producto_sqlserver/2_spec.md),
+y el marcador `[NECESITA ACLARACIÓN: …]` (§2.3) hace las veces de
+pregunta. La diferencia no es el resultado, es **quién detecta la
+ambigüedad**: allá la busca el agente; aquí la busca usted — que es
+justamente el músculo que el curso quiere entrenar.
+
+#### `analyze` — le dice dónde se contradicen sus documentos
+
+Se corre con la spec, el plan y las tareas ya escritos. **No toca nada**:
+lee los tres y reporta. Es la revisión de coherencia de la compuerta 2,
+hecha por máquina. Un reporte sobre una v1 mal armada se vería así:
+
+| # | Severidad | Dónde | Qué encontró |
+|---|---|---|---|
+| 1 | ALTA | `2_spec` RF7 ↔ `6_contracts` | RF7 (diagnóstico) no tiene contrato: ningún endpoint lo describe |
+| 2 | ALTA | `6_contracts` §7 ↔ `8_tasks` | El `DELETE` tiene contrato, pero ninguna fase lo construye |
+| 3 | MEDIA | `2_spec` criterio 3 ↔ `7_quickstart` | El criterio 3 no tiene comando en el smoke test: no hay forma de verificarlo |
+| 4 | MEDIA | `3_plan` §2 ↔ `8_tasks` | El plan lista `Excepciones/NoEncontradoExcepcion.cs` y ninguna tarea lo crea |
+| 5 | BAJA | `6_contracts` §4 ↔ `5_data_model` | El ejemplo del POST usa `PR009`, y las semillas llegan hasta `PR008` — correcto, pero conviene decir que es un código nuevo a propósito |
+
+Fíjese en algo: **ningún hallazgo es sobre el código**. Todos son
+contradicciones entre documentos. Y la corrección no se escribe en el
+reporte sino **en el documento dueño del problema**: el 1 y el 3 se
+arreglan en la spec, el 2 y el 4 en las tareas. Con hallazgos de
+severidad ALTA no se sigue.
+
+**A mano, en este curso:** es la tabla de trazabilidad de §2.4 recorrida
+fila por fila. **Cada hueco de esa tabla es un hallazgo de `analyze`.**
+
+#### `converge` — compara el código TERMINADO contra la spec
+
+Se corre al final, cuando usted ya cree que acabó. Revisa el código
+contra la spec, el plan y las tareas; y si algo quedó corto **no lo
+arregla**: agrega al final de `tasks.md` las tareas que faltan y le dice
+que vuelva a implementar. Nunca borra ni edita código.
+
+```text
+Convergencia — v1
+
+    Criterio 2  OK    GET /api/producto devuelve las 8 filas semilla
+    Criterio 4  OK    el ciclo de los 5 verbos pasa completo
+    Criterio 5  FALLA POST con stock 7.5 responde 400; la spec pide 422
+    Criterio 6  FALLA no existe el proyecto pruebas/
+
+Se agregan a 8_tasks.md:
+    ## Convergencia
+    - [ ] T15 Mover la validación de tipo a la petición (int?) -> 422
+    - [ ] T16 Crear pruebas/ con el repositorio FALSO en memoria
+
+Estado: NO convergido. Vuelva a implement y corra converge otra vez.
+```
+
+**A mano, en este curso:** es la última fase de
+[8_tasks.md](spec_kit/versiones/v1_producto_sqlserver/8_tasks.md) —el
+cierre— corriendo el smoke test del
+[7_quickstart.md](spec_kit/versiones/v1_producto_sqlserver/7_quickstart.md).
+Si un criterio no pasa, la versión **no se cierra ni se le pone el tag**:
+se agregan tareas y se sigue. La regla del curso —"no se avanza con una
+fase en rojo"— y `converge` dicen exactamente lo mismo.
+
+> **Lo que revelan los tres juntos:** el trabajo de verdad no es *escribir*
+> los documentos, sino **mantenerlos de acuerdo entre ellos y de acuerdo
+> con el código**. Spec Kit automatiza esa vigilancia; a mano la hacemos
+> con las tres compuertas (§2.2). Por eso un kit que nadie revisa es peor
+> que no tener kit: da la ilusión de que hay una fuente de verdad.
+
+### 3.4 Qué mejora frente a nuestro kit a mano — y qué no
 
 | | A mano (este curso) | Con Spec Kit instalado |
 |---|---|---|
@@ -602,7 +704,7 @@ lo reemplaza.
 > agente puede ayudar a evaluar pero **no puede auto-aprobarse**, y que
 > `implement` se frena si quedan casillas sin marcar.
 
-### 3.4 Entonces, ¿por qué en este curso se hace a mano?
+### 3.5 Entonces, ¿por qué en este curso se hace a mano?
 
 Cuatro razones, en orden de peso:
 
