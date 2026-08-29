@@ -157,3 +157,27 @@ funcionando. En v1 eso son **tres servicios**: `sqlserver` (11463 al host),
 `dotnet watch`, `bin/` y `obj/` en volúmenes anónimos para no mezclar
 compilados de Linux con los de Windows). El detalle línea por línea está en
 el `docker-compose.yml` de la raíz, comentado.
+
+## 6. Chequeo de constitución
+
+> **La compuerta 2** del método (ver [SDD_SPECKIT §2.2](../../../SDD_SPECKIT.md)):
+> antes de pasar a `8_tasks.md` se revisa la
+> [constitución](../../1_constitution.md) **artículo por artículo**. Si algo
+> no cumple, o se corrige el plan, o se enmienda la constitución. Nunca se
+> deja pasar "por esta vez".
+
+| Artículo | Cómo lo cumple la v1 |
+|---|---|
+| **1** — Por versiones, sin anticipar | Solo `producto` contra SQL Server. Sin fábrica de repositorios, sin segundo motor, sin front: eso pertenece a v3, v4 y v6. Cierre con tag `v1`. |
+| **2** — C#/ASP.NET Core, SQL a la vista | Dapper como ejecutor, SQL escrito a mano en el repositorio y **siempre** con `@parametro`. Paquetes: solo `Microsoft.Data.SqlClient`, `Dapper` y `Swashbuckle.AspNetCore` (§1). |
+| **3** — Capas con interfaces desde el día 1 | `Controllers/` → `IServicioProducto` → `IRepositorioProducto` → `RepositorioProductoSqlServer` (§3). Solo `Program.cs` conoce clases concretas. |
+| **4** — Un solo comando | `docker compose up -d --build` levanta los tres servicios (§5). |
+| **5** — La BD viene dada | El script provisto crea `bdfacturas` completa (12 tablas); la v1 solo nombra `producto` ([5_data_model](5_data_model.md)). |
+| **6** — Español y comentado | Nombres, rutas y mensajes en español; el código lleva comentarios línea a línea. |
+| **7** — Contratos exactos | [6_contracts.md](6_contracts.md) fija los 7 endpoints con TODOS sus códigos, incluido el contraste `PUT` 422 vs `PATCH` 200. |
+| **8** — Convenciones fijas | Puertos 8032 (API) y 11463 (SQL Server); rutas `/`, `/swagger`, `/api/producto`; sobre `{tabla, limite, total, datos}`; errores 422 / 400 / 404 / 500 tal como los define el artículo. |
+
+**Complejidad justificada:** ninguna. La v1 no se desvía de ningún
+artículo, así que no hay excepciones que sustentar. Cuando una versión sí
+se desvíe, aquí va la desviación, la alternativa más simple que se
+descartó y por qué no sirvió.

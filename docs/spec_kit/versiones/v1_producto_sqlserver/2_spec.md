@@ -164,3 +164,43 @@ inexistente → 404.
 6. **Prueba de capas:** `dotnet run --project pruebas` (o vía
    `docker compose exec`) ejecuta el servicio con un repositorio FALSO en
    memoria — sin SQL Server — y todas las verificaciones pasan.
+
+## 6. Clarificaciones
+
+> **Qué es esta sección:** el registro de las ambigüedades detectadas ANTES
+> de planear, con la respuesta que se acordó y su razón. Es **la compuerta
+> 1** del método (ver [SDD_SPECKIT §2.2](../../../SDD_SPECKIT.md)):
+> mientras quede un `[NECESITA ACLARACIÓN: …]` en los requisitos de arriba,
+> esta versión no pasa a la planeación.
+>
+> En la v1 esta sección se escribió **al cerrar la versión**, reuniendo las
+> preguntas que de hecho se resolvieron mientras se especificaba. De la v2
+> en adelante se llena **en vivo**, antes del `3_plan.md` — que es como
+> debe ser.
+
+| # | La pregunta | La respuesta acordada, con su razón | Dónde quedó |
+|---|---|---|---|
+| C1 | El listado sin filas, ¿es un error o un resultado? | Un resultado: **204 sin cuerpo**. Vacío no es error. | RF1 · contrato §2 |
+| C2 | `?limite=0` o negativo, ¿422 o 400? | **400**: la FORMA del dato es correcta (sí es un entero); lo que se rompe es una regla de negocio. El 422 se reserva para el body mal formado. | RF1 · contrato §0 y §2 |
+| C3 | `stock: 7.5` o `"texto"`, ¿lo rechaza la API o lo deja llegar a la BD? | Lo rechaza la **petición** con 422: el TIPO también es regla, porque la petición declara `int?`. Nunca llega a la BD. | Criterio 5 · [D5](4_research.md) |
+| C4 | Crear con un código que ya existe, ¿409 o 500? | **500**, con el error del motor en `detalle`: en la v1 la PK la defiende la BD, no la API. Convertirlo en 409 sería lógica de negocio que esta versión no pide. | Criterio 5 · contrato §4 |
+| C5 | `DELETE`, ¿borrado físico o lógico? | **Físico**: la tabla `producto` no tiene columna de estado. El borrado lógico llega con la anulación de facturas, en una versión posterior. | RF6 · [5_data_model](5_data_model.md) §2 |
+| C6 | `PATCH` con el body vacío, ¿200 sin hacer nada, o error? | **400**: pedir una actualización sin decir qué actualizar es una regla de negocio rota. | Contrato §6 |
+
+**Cómo se escribe una entrada nueva:** la pregunta tal como se hizo (no
+"revisar el borrado", sino "¿físico o lógico?"), la respuesta **con su
+razón**, y el documento donde quedó plasmada. Si la respuesta cambia un
+requisito, se corrige el requisito allá arriba: esta sección lo registra,
+no lo reemplaza.
+
+## 7. Definición de TERMINADA
+
+La v1 está terminada — y solo entonces se escribe la spec de la v2 — cuando:
+
+1. Los **6 criterios de aceptación** de la sección 5 pasan, verificados con
+   el smoke test de [7_quickstart.md](7_quickstart.md), **corrido por una
+   persona**. "Me funciona" no es evidencia.
+2. La lista de [9_checklist.md](9_checklist.md) está en verde y firmada.
+3. No queda ningún `[NECESITA ACLARACIÓN: …]` en este documento.
+4. Se hace commit y **tag `v1`** (Artículo 1 de la
+   [constitución](../../1_constitution.md)).

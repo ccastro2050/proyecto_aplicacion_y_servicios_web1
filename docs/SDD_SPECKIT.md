@@ -163,12 +163,13 @@ se declaran); y las decisiones de diseño de la versión — en la familia
 diseño, con sus diagramas Mermaid.
 
 **Esqueleto:** `1. Stack` · `2. Estructura de carpetas` ·
-`3. Arquitectura`, con sus diagramas Mermaid · `4. Chequeo de
-constitución` — **la compuerta 2** (§2.2): artículo por artículo, cómo lo
-cumple ESTA versión · `5. Inventario`: tabla de archivos NUEVOS y tabla de
-los que CRECEN (los intocables también se declaran) · `6. Complejidad
-justificada`: toda desviación, con la alternativa más simple que se
-descartó y por qué.
+`3. Arquitectura`, con sus diagramas Mermaid · `4. Decisiones de diseño` ·
+`5. Inventario`: tabla de archivos NUEVOS y tabla de los que CRECEN (los
+intocables también se declaran; desde la v2, que es cuando ya hay algo que
+crezca) · y como **última sección, el Chequeo de constitución** —
+**la compuerta 2** (§2.2): artículo por artículo, cómo lo cumple ESTA
+versión, y las desviaciones justificadas si las hubo, cada una con la
+alternativa más simple que se descartó.
 
 ```markdown
 **Crecen (los únicos existentes que se tocan):**
@@ -268,9 +269,9 @@ falla" con las causas probables.
 
 **Esqueleto:** `1. Arranque` (un comando) · `2. Smoke test` — un comando
 por criterio, **numerado igual que los criterios de `2_spec.md`**, con el
-valor esperado al lado · `3. Regresión` — los smokes de las versiones
-anteriores, que deben seguir pasando · `4. Si algo falla`, con las causas
-probables.
+valor esperado al lado · `3. Regresión` — desde la v2: los smokes de las
+versiones anteriores, que deben seguir pasando · `4. Si algo falla`, con
+las causas probables.
 
 ```bash
 curl http://localhost:8032/api/producto        # total: 8
@@ -289,8 +290,9 @@ en un estado COMPROBABLE (`dotnet build`); la verificación se escribe
 como comando concreto, no como "revisar que funcione".
 
 **Esqueleto:** `Fase 0` … `Fase N`, cada una con: casillas `- [ ]` por
-tarea · la marca `[P]` en las que pueden hacerse en paralelo · a qué **RF**
-sirve cada bloque · y su compuerta **Verificar:** con un comando concreto.
+tarea · la marca `[P]` donde dos tareas de verdad no dependen una de otra
+(en una construcción por capas la mayoría son secuenciales, y está bien) ·
+a qué **RF** sirve cada bloque · y su compuerta **Verificar:** con un comando concreto.
 La última fase es siempre el cierre: regresión, criterios y tag.
 
 ```markdown
@@ -338,7 +340,7 @@ Las tres compuertas, en detalle:
 | | Vive en | La pregunta que hace | Si falla |
 |---|---|---|---|
 | **1. Clarificaciones** | Sección 6 de `2_spec.md` | ¿Hay algo que dos personas leerían distinto? | Se pregunta al dueño del problema y la respuesta se pliega DENTRO de la spec — no se resuelve improvisando en el código |
-| **2. Chequeo de constitución** | Sección 4 de `3_plan.md` | ¿El plan respeta los artículos, uno por uno? ¿Los cinco documentos dicen lo mismo? | O se corrige el plan, o se enmienda la constitución (y sube de versión). Nunca "se deja pasar por esta vez" |
+| **2. Chequeo de constitución** | Última sección de `3_plan.md` | ¿El plan respeta los artículos, uno por uno? ¿Los cinco documentos dicen lo mismo? | O se corrige el plan, o se enmienda la constitución (y sube de versión). Nunca "se deja pasar por esta vez" |
 | **3. Lista de requisitos** | `9_checklist.md` de la versión | ¿Cada requisito es medible, único y verificable? | Se devuelve a la spec. **No se escribe código con la lista en rojo** |
 
 > **La tercera es la que hoy nos falta.** Es una lista de chequeo **sobre
@@ -392,10 +394,11 @@ un requisito sin contrato es una promesa vaga; un contrato sin tarea no lo
 va a construir nadie; una tarea sin smoke test no se puede dar por
 terminada.
 
-| Historia | RF (`2_spec`) | Contrato (`6_contracts`) | Tarea (`8_tasks`) | Smoke (`7_quickstart`) | Criterio |
+| RF (`2_spec`) | Aclaración (`2_spec` §6) | Contrato (`6_contracts`) | Tarea (`8_tasks`) | Smoke (`7_quickstart`) | Criterio |
 |---|---|---|---|---|---|
-| HU1 — consultar el catálogo | RF1 | §2 `GET /api/producto` | Fase 5 · controlador | §2 comando 2 | 1 y 2 |
-| HU4 — corregir un dato suelto | RF5 | §6 `PATCH` | Fase 5 · controlador | §2 comando 4b | 4 |
+| RF1 — listar | C1, C2 | §2 `GET /api/producto` | Fase 5 · controlador | §2 comando 2 | 1 y 2 |
+| RF5 — actualizar parcial | C6 | §6 `PATCH` | Fase 5 · controlador | §2 comando 4b | 4 |
+| RF6 — eliminar | C5 | §7 `DELETE` | Fase 5 · controlador | §2 comando 4 | 4 |
 
 **La prueba de fuego del kit:** tape el código y entregue solo estos
 documentos. Si alguien —una persona o una IA— reconstruye la versión
