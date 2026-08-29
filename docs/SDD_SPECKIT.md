@@ -72,6 +72,13 @@ entregándole a una IA el spec kit — y nada más.
 | 7 | `7_quickstart.md` | ¿Cómo se arranca y se valida rápido? | El comando de arranque y el **smoke test**: la lista de curl que recorre los criterios de aceptación en minutos, con los valores esperados al lado. |
 | 8 | `8_tasks.md` | ¿En qué ORDEN se construye, por fases verificables? | Las fases de construcción, cada una con sus tareas y su "**Verificar:**" — la regla es NO avanzar con una fase en rojo. |
 
+> **Ojo con la numeración: son 8 documentos, no 8 pasos.** El número
+> ordena la LECTURA, no el trabajo. En el Spec Kit real los documentos
+> **4, 5, 6 y 7 salen junto con el 3**: son las dos fases de un mismo
+> paso de planeación (Fase 0 produce `research`; Fase 1 produce
+> `data-model`, `contracts` y `quickstart`). Se escriben —y se revisan—
+> como un solo bloque: el plan. El detalle, en la sección 3.
+
 - **La constitución es una y permanente**; los documentos 2 a 8 se escriben
   POR VERSIÓN, en `versiones/vN_nombre/`.
 - **La versión en curso:**
@@ -251,7 +258,182 @@ falta especificarlo.
 fase → correr el quickstart → si los criterios pasan, commit + tag (`v1`) →
 solo entonces se escribe la spec de la siguiente versión.
 
-## 3. Las reglas de juego del curso
+## 3. GitHub Spec Kit: la herramienta (y por qué aquí vamos a mano)
+
+Hasta aquí se describió el **método**. **Spec Kit** es la herramienta que
+GitHub publicó (open source, licencia MIT) para ejecutarlo con agentes de
+IA. La distinción vale para el examen: **SDD es la *metodología*** (el
+"qué hacer") y **Spec Kit es *una* implementación** (el "con qué") — la
+misma relación que hay entre "control de versiones" y "Git". Se puede
+hacer SDD sin Spec Kit —este curso lo demuestra— pero no tiene sentido
+Spec Kit sin SDD.
+
+### 3.1 El enlace oficial: qué hay ahí
+
+**<https://github.github.com/spec-kit/>** es el **manual** del toolkit (el
+código vive aparte, en <https://github.com/github/spec-kit>). Vale la pena
+abrirlo aunque nunca lo instale:
+
+| Sección | Qué encuentra |
+|---|---|
+| **Quick Start** | El flujo completo, comando por comando, con el archivo que produce cada uno |
+| **Installation** | Requisitos y el comando de instalación del CLI `specify` |
+| **Reference** | Qué hace cada comando, qué archivo escribe y cuál NO |
+| Extensiones y presets | Variantes del proceso aportadas por la comunidad |
+
+Cítelo cuando alguien afirme "Spec Kit hace X": el toolkit cambia rápido
+—los comandos `clarify`, `checklist`, `analyze` y `converge` no existían
+en las primeras versiones— y el sitio es lo único que está al día.
+
+### 3.2 Qué significa "instalarlo"
+
+Spec Kit **no es una librería que se importe en el código**: no aparece en
+`Program.cs` ni en el `.csproj`, y no cambia en nada cómo corre la API. Es
+un CLI (`specify`) que deposita **plantillas y comandos dentro del
+proyecto** para que su agente de IA los ejecute. Requiere Python 3.11 o
+superior, `uv` (o `pipx`) y un agente compatible (Claude Code, Copilot,
+Gemini CLI…).
+
+```bash
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+specify init mi_v1_producto --integration copilot
+specify version
+```
+
+Hecho eso, dentro del agente aparecen los comandos `/speckit.*`. El flujo
+completo, con las tres compuertas que a mano no existen marcadas aparte:
+
+```mermaid
+flowchart LR
+    A["constitution"] --> B["specify"]
+    B --> C["clarify"]
+    C --> D["plan"]
+    D --> E["checklist"]
+    E --> F["tasks"]
+    F --> G["analyze"]
+    G --> H["implement"]
+    H --> I["converge"]
+    classDef compuerta fill:#fde7c8,stroke:#c07a24,stroke-width:2px
+    class C,E,G compuerta
+```
+
+Y lo que deja cada comando en el disco:
+
+| # | Comando | Qué produce |
+|---|---|---|
+| 1 | `/speckit.constitution` | `.specify/constitution.md` |
+| 2 | `/speckit.specify` | `specs/<funcionalidad>/spec.md` |
+| 3 | `/speckit.clarify` | **modifica** `spec.md`: pliega adentro las respuestas a sus preguntas |
+| 4 | `/speckit.plan` | `plan.md` y —cuando la funcionalidad lo pide— `research.md`, `data-model.md`, `contracts/` y `quickstart.md` |
+| 5 | `/speckit.checklist` | `checklists/requirements.md` |
+| 6 | `/speckit.tasks` | `tasks.md`, ordenado por dependencias |
+| 7 | `/speckit.analyze` | **nada**: un reporte de inconsistencias entre spec, plan y tareas |
+| 8 | `/speckit.implement` | el código |
+| 9 | `/speckit.converge` | agrega tareas a `tasks.md` si el código quedó corto frente a la spec |
+
+Documento por documento, así se corresponde con NUESTRO kit numerado:
+
+```mermaid
+flowchart LR
+    subgraph MANO["Nuestro kit — escrito a mano"]
+        direction TB
+        N1["1_constitution.md"]
+        N2["2_spec.md"]
+        N3["3_plan.md"]
+        N4["4_research.md"]
+        N5["5_data_model.md"]
+        N6["6_contracts.md"]
+        N7["7_quickstart.md"]
+        N8["8_tasks.md"]
+        N9["no existe"]
+    end
+    subgraph KIT["Spec Kit — generado por comandos"]
+        direction TB
+        S1["constitution.md"]
+        S2["spec.md — con las Clarifications adentro"]
+        S3["plan.md"]
+        S4["research.md"]
+        S5["data-model.md"]
+        S6["contracts — un DIRECTORIO, OpenAPI"]
+        S7["quickstart.md"]
+        S8["tasks.md"]
+        S9["checklists de requirements"]
+    end
+    N1 --- S1
+    N2 --- S2
+    N3 --- S3
+    N4 --- S4
+    N5 --- S5
+    N6 --- S6
+    N7 --- S7
+    N8 --- S8
+    N9 -.-> S9
+    classDef falta fill:#fdd,stroke:#c33,stroke-width:2px
+    class N9,S9 falta
+```
+
+Dos diferencias de forma que conviene ver: `contracts` es un
+**directorio** de contratos legibles por máquina (OpenAPI, esquemas) y no
+un `.md` en prosa como nuestro `6_contracts.md`; y las aclaraciones no son
+un documento aparte — viven **dentro** de `spec.md`.
+
+### 3.3 Qué mejora frente a nuestro kit a mano — y qué no
+
+| | A mano (este curso) | Con Spec Kit instalado |
+|---|---|---|
+| Redactar los documentos | Usted escribe cada `.md` | El agente los genera; usted corrige |
+| Ambigüedades de la spec | Se descubren programando (tarde) | `/speckit.clarify` pregunta ANTES de planear |
+| Calidad de los requisitos | Criterio del profesor | `checklists/requirements.md`: los requisitos se revisan como si fueran código |
+| Coherencia entre documentos | Usted la vigila leyendo | `/speckit.analyze` la revisa y reporta |
+| Orden de las tareas | Usted ordena las fases a mano | `tasks.md` sale ordenado por dependencias |
+| "¿Ya está terminado?" | El smoke test del `7_quickstart.md` | `/speckit.converge` compara el código contra la spec y agrega lo que falte |
+| Qué hace falta para usarlo | Un navegador y un editor | Python, `uv`, un agente de IA y permiso para instalar |
+| Si la herramienta cambia | Nada: son `.md` | Hay que actualizarse (ya pasó: cuatro comandos nuevos) |
+
+En una frase: **Spec Kit quita el trabajo mecánico —redactar, ordenar,
+cotejar— y agrega tres compuertas que a mano no existen**: `clarify`,
+`checklist` y `analyze`. La mejora es real y es grande.
+
+Lo que NO mejora: **la calidad de sus decisiones**. Una spec generada a
+partir de una idea vaga sigue siendo vaga — solo que bien formateada y con
+más páginas. La herramienta acelera el pensamiento que usted ya hizo; no
+lo reemplaza.
+
+> **El detalle más interesante, el `checklist`:** es control de calidad
+> sobre la ESPECIFICACIÓN, no sobre el código — ¿cada requisito es
+> medible?, ¿hay ambigüedad?, ¿algún criterio no se puede verificar? Y las
+> casillas las marca **una persona**: la documentación oficial dice que el
+> agente puede ayudar a evaluar pero **no puede auto-aprobarse**, y que
+> `implement` se frena si quedan casillas sin marcar.
+
+### 3.4 Entonces, ¿por qué en este curso se hace a mano?
+
+Cuatro razones, en orden de peso:
+
+1. **Spec Kit automatiza la escritura, no la decisión.** Quien nunca
+   redactó un criterio de aceptación no puede juzgar si el que generó la
+   IA sirve — y termina aceptando specs sin leerlas, igual que se acepta
+   código sin leerlo. Sería cambiar el *vibe coding* por **vibe
+   speccing**: el mismo vicio, un piso más arriba.
+2. **Los artefactos sobreviven a la herramienta.** Las decisiones con sus
+   alternativas (ADR), el modelo de datos, el contrato, los criterios de
+   aceptación y la trazabilidad son ingeniería de requisitos de hace
+   décadas. Spec Kit es de 2025 y ya cambió bajo los pies de todos: aquí
+   se aprende lo permanente, y la herramienta se demuestra.
+3. **Corre donde usted está.** El kit a mano funciona con un chat web
+   gratuito, sin CLI, sin agente, sin llave de API y sin permisos de
+   instalación en la sala de la universidad.
+4. **Es evaluable y comparable.** Los `.md` se leen y se califican, y los
+   cursos comparten la misma estructura sobre la misma `bdfacturas` con
+   stacks distintos.
+
+> **El experimento de cierre:** al terminar la ruta de versiones,
+> regenerar la v1 con `specify init` y los comandos reales, y comparar el
+> kit generado con el que usted escribió a mano. La prueba de que aprendió
+> no es que la IA lo genere: es que usted pueda leerlo y decir qué le
+> falta.
+
+## 4. Las reglas de juego del curso
 
 1. **La spec manda sobre el código.** Si el código hace algo que la spec no
    dice, sobra; si la spec pide algo que el código no hace, falta.
@@ -263,11 +445,13 @@ solo entonces se escribe la spec de la siguiente versión.
    desde cero sin leer el código existente — esa es la prueba de calidad
    de la spec (y el experimento de la GUIA_IA).
 
-## 4. Referencias
+## 5. Referencias
 
 1. GitHub — *Spec Kit* (la herramienta que popularizó el término):
    <https://github.com/github/spec-kit>
-2. Especificación por el ejemplo: Adzic, G. — *Specification by Example*
+2. **Documentación oficial de Spec Kit** — Quick Start, instalación y
+   referencia de cada comando: <https://github.github.com/spec-kit/>
+3. Especificación por el ejemplo: Adzic, G. — *Specification by Example*
    (Manning, 2011).
-3. En este repositorio: el [spec kit completo](spec_kit/1_constitution.md)
+4. En este repositorio: el [spec kit completo](spec_kit/1_constitution.md)
    y la [GUIA_IA.md de la versión](spec_kit/versiones/v1_producto_sqlserver/GUIA_IA1.md) que lo pone a prueba.
