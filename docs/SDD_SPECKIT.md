@@ -59,7 +59,7 @@ solo escribe EL CORRECTO si alguien le da una especificación precisa. En
 este curso usted lo vive: la [GUIA_IA.md de la versión](spec_kit/versiones/v1_producto_sqlserver/GUIA_IA1.md) construye la versión
 entregándole a una IA el spec kit — y nada más.
 
-## 2. El spec kit de este proyecto (8 documentos numerados)
+## 2. El spec kit de este proyecto (8 documentos y una lista de chequeo)
 
 | # | Documento | Pregunta que responde | Qué encuentra adentro |
 |---|---|---|---|
@@ -72,12 +72,9 @@ entregándole a una IA el spec kit — y nada más.
 | 7 | `7_quickstart.md` | ¿Cómo se arranca y se valida rápido? | El comando de arranque y el **smoke test**: la lista de curl que recorre los criterios de aceptación en minutos, con los valores esperados al lado. |
 | 8 | `8_tasks.md` | ¿En qué ORDEN se construye, por fases verificables? | Las fases de construcción, cada una con sus tareas y su "**Verificar:**" — la regla es NO avanzar con una fase en rojo. |
 
-> **Ojo con la numeración: son 8 documentos, no 8 pasos.** El número
-> ordena la LECTURA, no el trabajo. En el Spec Kit real los documentos
-> **4, 5, 6 y 7 salen junto con el 3**: son las dos fases de un mismo
-> paso de planeación (Fase 0 produce `research`; Fase 1 produce
-> `data-model`, `contracts` y `quickstart`). Se escriben —y se revisan—
-> como un solo bloque: el plan. El detalle, en la sección 3.
+A esos ocho se suma un noveno archivo, `9_checklist.md`, que **no describe
+la versión: la revisa**. Es la compuerta que se pasa antes de escribir
+código (§2.2), y por eso no se le entrega a la IA junto con los demás.
 
 - **La constitución es una y permanente**; los documentos 2 a 8 se escriben
   POR VERSIÓN, en `versiones/vN_nombre/`.
@@ -115,6 +112,13 @@ entrenamiento.
 artículos numerados, cortos y verificables; si un artículo no se puede
 violar "por accidente", no necesita estar.
 
+**Esqueleto:** encabezado con **la versión de la constitución y su
+fecha** · `Artículo 1` … `Artículo N`, uno por regla, cortos y
+verificables · y como último, el **artículo de enmiendas**: cómo se cambia
+una regla (se propone en el `4_research.md` de la versión que la necesita,
+y la constitución sube de versión). Una regla que nadie puede violar por
+accidente no merece artículo.
+
 ```markdown
 ## Artículo 3 — SQL siempre parametrizado
 Los valores viajan como @parametros de Dapper; JAMÁS se concatenan
@@ -131,6 +135,12 @@ que decide si pasó o no.
 (qué, no cómo); por cada RF, criterios con valores concretos (cuántas
 filas, qué código HTTP, qué mensaje); y un "NO incluye" explícito — frena
 la anticipación, que es el vicio favorito de la IA.
+
+**Esqueleto:** `1. Propósito` (dos frases) · `2. Alcance`, con su **NO
+incluye** explícito · `3. Requisitos funcionales` (RF1, RF2…) ·
+`4. Requisitos no funcionales` · `5. Criterios de aceptación`, numerados y
+medibles · `6. Clarificaciones` — **la compuerta 1** (§2.2): cada pregunta
+con su respuesta, la fecha y qué RF cambió · `7. Definición de TERMINADA`.
 
 ```markdown
 ### RF5 — Actualizar parcialmente (PATCH + body parcial)
@@ -152,6 +162,14 @@ papel; tabla de archivos que CRECEN y qué les crece (los intocables también
 se declaran); y las decisiones de diseño de la versión — en la familia
 diseño, con sus diagramas Mermaid.
 
+**Esqueleto:** `1. Stack` · `2. Estructura de carpetas` ·
+`3. Arquitectura`, con sus diagramas Mermaid · `4. Chequeo de
+constitución` — **la compuerta 2** (§2.2): artículo por artículo, cómo lo
+cumple ESTA versión · `5. Inventario`: tabla de archivos NUEVOS y tabla de
+los que CRECEN (los intocables también se declaran) · `6. Complejidad
+justificada`: toda desviación, con la alternativa más simple que se
+descartó y por qué.
+
 ```markdown
 **Crecen (los únicos existentes que se tocan):**
 | Archivo | Qué crece |
@@ -171,6 +189,12 @@ no de otra forma.
 consideradas (a, b, c) → decisión con su razón → consecuencias que se
 aceptan. Se escribe CUANDO se decide, no semanas después.
 
+**Esqueleto:** una sección por decisión, numerada **sin repetir entre
+versiones** (`D-v2-1`, `D-v2-2`… — si la v1 y la v3 tienen ambas un "D4",
+la trazabilidad se rompe), y cada una con: contexto → alternativas
+(a, b, c) → decisión y su razón → consecuencias que se aceptan →
+**estado**: *vigente* o *superada por vN*.
+
 ```markdown
 ## D4 — ¿Por qué PUT y PATCH separados?
 **Alternativas:** (a) un solo endpoint "actualizar" · (b) PUT
@@ -187,6 +211,14 @@ calcula" — deja escrito qué columnas tiene PROHIBIDO tocar la API.
 **Cómo se hace:** tabla por tabla (columna, tipo, regla); anote qué escribe
 la BD sola (defaults, autonuméricos, triggers); semillas con valores
 EXACTOS, porque el smoke test depende de ellas.
+
+**Esqueleto:** `1. Las tablas que esta versión puede nombrar` (columna,
+tipo, regla) · `2. Semillas exactas` — los valores que el smoke test da por
+ciertos · `3. Invariantes`: tabla de quién es **dueño** de cada dato
+calculado y quién tiene **prohibido** escribirlo · `4. Estados` de la
+entidad, si los tiene, como diagrama Mermaid. Una versión que no agrega
+datos propios igual llena el punto 3: dice de qué depende y qué no puede
+tocar.
 
 ```markdown
 | Tabla | PK | Semilla |
@@ -207,6 +239,14 @@ contratos se congelan.
 (404, 422, 500) con su formato — el error también es contrato; los valores
 de ejemplo salen de las semillas del 5_data_model.
 
+**Esqueleto:** `0. Convenciones` — el sobre de respuesta y el catálogo de
+errores, una sola vez · después un bloque por endpoint: verbo, URL, body y
+**todos** sus códigos con el JSON exacto · y, cuando exista, el enlace al
+contrato **legible por máquina** (el `openapi.json` que Swagger ya
+publica). Ese enlace es lo que acerca nuestro `.md` en prosa al
+`contracts/` del Spec Kit real, que es un directorio de contratos y no un
+texto (§3.2).
+
 ```markdown
 POST /api/producto
 body { "codigo": "PR009", "nombre": "Webcam", "stock": 10,
@@ -226,6 +266,12 @@ la REGRESIÓN (lo viejo debe seguir pasando).
 orden, con el resultado esperado como comentario; y una tabla "Si algo
 falla" con las causas probables.
 
+**Esqueleto:** `1. Arranque` (un comando) · `2. Smoke test` — un comando
+por criterio, **numerado igual que los criterios de `2_spec.md`**, con el
+valor esperado al lado · `3. Regresión` — los smokes de las versiones
+anteriores, que deben seguir pasando · `4. Si algo falla`, con las causas
+probables.
+
 ```bash
 curl http://localhost:8032/api/producto        # total: 8
 curl -i http://localhost:8032/api/producto/PR999   # → 404
@@ -242,6 +288,11 @@ de todo (modelo → repositorio → servicio → controlador); cada fase termina
 en un estado COMPROBABLE (`dotnet build`); la verificación se escribe
 como comando concreto, no como "revisar que funcione".
 
+**Esqueleto:** `Fase 0` … `Fase N`, cada una con: casillas `- [ ]` por
+tarea · la marca `[P]` en las que pueden hacerse en paralelo · a qué **RF**
+sirve cada bloque · y su compuerta **Verificar:** con un comando concreto.
+La última fase es siempre el cierre: regresión, criterios y tag.
+
 ```markdown
 ## Fase 2 — El modelo y las peticiones
 - [ ] Modelos/Producto.cs (la entidad: 4 propiedades tipadas)
@@ -249,6 +300,148 @@ como comando concreto, no como "revisar que funcione".
 
 **Verificar:** `dotnet build` compila sin errores.
 ```
+
+### 2.2 El orden de armado y las tres compuertas
+
+Los ocho documentos se escriben **en su orden numerado**: la constitución
+primero (una sola vez), después la spec de la versión, después la
+planeación, y de última las tareas. Lo que hay que agregarle a ese camino
+—y es lo que separa un kit que sirve de una carpeta con ocho archivos— son
+**tres compuertas**: puntos donde uno se detiene, revisa y no sigue hasta
+que quede en verde.
+
+```mermaid
+flowchart TD
+    A["1_constitution — una sola vez, para todo el curso"] --> B["2_spec — el QUE de la version"]
+    B --> C{"Compuerta 1<br/>Clarificaciones"}
+    C -->|"queda una ambigüedad, se pregunta y se responde en 2_spec"| B
+    C -->|"sin ambigüedades"| D["La planeación de la versión<br/>3_plan · 4_research · 5_data_model<br/>6_contracts · 7_quickstart"]
+    D --> E{"Compuerta 2<br/>Chequeo de constitución<br/>y coherencia entre los cinco"}
+    E -->|"algo se contradice o viola un artículo"| D
+    E -->|"todo cuadra"| F["8_tasks — el orden de construcción"]
+    F --> G{"Compuerta 3<br/>Lista de requisitos"}
+    G -->|"algún criterio no es medible"| B
+    G -->|"lista en verde"| H["RECIEN AQUI se escribe código"]
+    classDef compuerta fill:#fde7c8,stroke:#c07a24,stroke-width:2px
+    class C,E,G compuerta
+```
+
+Fíjese en el bloque del medio: los documentos **3 a 7 se escriben en
+orden, pero se revisan juntos**. Se contradicen entre ellos con una
+facilidad pasmosa — el contrato promete un campo que el modelo de datos no
+tiene, el quickstart valida un criterio que la spec nunca pidió, el plan
+inventa un archivo que ninguna tarea construye. Por eso la compuerta 2 no
+revisa "el plan": revisa **los cinco a la vez**.
+
+Las tres compuertas, en detalle:
+
+| | Vive en | La pregunta que hace | Si falla |
+|---|---|---|---|
+| **1. Clarificaciones** | Sección 6 de `2_spec.md` | ¿Hay algo que dos personas leerían distinto? | Se pregunta al dueño del problema y la respuesta se pliega DENTRO de la spec — no se resuelve improvisando en el código |
+| **2. Chequeo de constitución** | Sección 4 de `3_plan.md` | ¿El plan respeta los artículos, uno por uno? ¿Los cinco documentos dicen lo mismo? | O se corrige el plan, o se enmienda la constitución (y sube de versión). Nunca "se deja pasar por esta vez" |
+| **3. Lista de requisitos** | `9_checklist.md` de la versión | ¿Cada requisito es medible, único y verificable? | Se devuelve a la spec. **No se escribe código con la lista en rojo** |
+
+> **La tercera es la que hoy nos falta.** Es una lista de chequeo **sobre
+> la especificación, no sobre el código**, y las casillas las marca una
+> persona (§3.3). Sus preguntas son de este tipo: *¿cada criterio de
+> aceptación dice un número o un código HTTP concreto? · ¿algún requisito
+> usa "rápido", "amigable" o "eficiente" sin definirlos? · ¿hay dos
+> requisitos que se contradicen? · ¿algún criterio no se puede verificar
+> con un comando?* Es, además, la mejor actividad de aula del método: los
+> estudiantes se revisan la spec entre ellos con la lista, antes de
+> escribir una línea de código.
+
+### 2.3 Cómo se escribe un requisito que sirve
+
+La mitad del valor del kit se juega aquí. Cuatro reglas:
+
+1. **Sin tecnología en la spec.** El QUÉ no menciona Dapper, ni nombres de
+   clase, ni archivos. Eso vive en el plan. Si el RF no se entiende sin
+   saber el stack, está mal escrito.
+2. **Medible o no es criterio.** Un criterio dice un número, un código de
+   estado o un texto exacto. "Responde rápido" no es criterio; "responde
+   200 con las 8 filas semilla" sí.
+3. **Una cosa por requisito.** Si un RF necesita un "y" para explicarse,
+   casi siempre son dos.
+4. **La ambigüedad se MARCA, no se rellena.** Cuando algo no está
+   definido, se escribe el marcador y se resuelve en la compuerta 1 —
+   jamás se inventa la respuesta:
+
+```markdown
+### RF6 — Eliminar producto
+DELETE /api/producto/{codigo} elimina el producto.
+[NECESITA ACLARACIÓN: ¿borrado físico, o lógico como la anulación
+de facturas? Afecta al criterio 5 y al contrato del DELETE.]
+```
+
+Esa costumbre —marcar en vez de rellenar— es la vacuna contra el vicio
+central de la IA: **cuando no sabe, no pregunta; completa**. Y completa con
+lo más frecuente en su entrenamiento, no con lo que su proyecto necesita.
+
+| Así NO | Así SÍ |
+|---|---|
+| "El sistema debe validar correctamente los datos" | "Un POST sin el campo `nombre` responde **422** con `errores[]` y no toca la BD" |
+| "Debe ser rápido" | "El listado responde en menos de 1 s con las 8 filas semilla" |
+| "Manejar los errores adecuadamente" | "Código inexistente → **404** con `{estado, mensaje, detalle}`" |
+
+### 2.4 La trazabilidad: de la historia al smoke test
+
+Un kit bien armado permite seguir **una misma idea** a través de los ocho
+documentos. Si una fila de esta tabla tiene un hueco, ahí hay un defecto:
+un requisito sin contrato es una promesa vaga; un contrato sin tarea no lo
+va a construir nadie; una tarea sin smoke test no se puede dar por
+terminada.
+
+| Historia | RF (`2_spec`) | Contrato (`6_contracts`) | Tarea (`8_tasks`) | Smoke (`7_quickstart`) | Criterio |
+|---|---|---|---|---|---|
+| HU1 — consultar el catálogo | RF1 | §2 `GET /api/producto` | Fase 5 · controlador | §2 comando 2 | 1 y 2 |
+| HU4 — corregir un dato suelto | RF5 | §6 `PATCH` | Fase 5 · controlador | §2 comando 4b | 4 |
+
+**La prueba de fuego del kit:** tape el código y entregue solo estos
+documentos. Si alguien —una persona o una IA— reconstruye la versión
+completa y la valida, el kit está bien armado. Ese es, literalmente, el
+experimento que hace la `GUIA_IA` de cada versión.
+
+### 2.5 Cuándo un documento está TERMINADO
+
+| Documento | Está terminado cuando… |
+|---|---|
+| `1_constitution.md` | Cada artículo se puede citar para ganar una discusión sin abrir el código |
+| `2_spec.md` | No queda ni un `[NECESITA ACLARACIÓN]` y cada criterio tiene un valor concreto |
+| `3_plan.md` | El chequeo de constitución está completo y el inventario nombra TODOS los archivos que se van a tocar |
+| `4_research.md` | Cada decisión tiene al menos una alternativa descartada con su razón (si no hubo alternativa, no era una decisión) |
+| `5_data_model.md` | Están las semillas exactas y dice quién tiene prohibido escribir cada dato calculado |
+| `6_contracts.md` | Cada endpoint tiene sus desenlaces de ERROR, no solo el feliz |
+| `7_quickstart.md` | Sus comandos recorren, en orden, TODOS los criterios de aceptación — y la regresión de las versiones anteriores |
+| `8_tasks.md` | Cada fase termina en un comando que se puede correr, no en "revisar que funcione" |
+| `9_checklist.md` | Todas las casillas marcadas **por una persona** — solo entonces empieza el código |
+
+### 2.6 Orden y nombres: cómo se llama cada archivo
+
+El **número del prefijo es el orden**, de lectura y de armado. El nombre
+que va después del número es el del artefacto equivalente en Spec Kit —por
+eso está en inglés (`spec`, `plan`, `research`, `data_model`, `contracts`,
+`quickstart`, `tasks`)— mientras que el CONTENIDO va todo en español. Así,
+quien pase de este curso a la herramienta real reconoce cada documento por
+su nombre.
+
+| Archivo | Dónde vive | Alcance |
+|---|---|---|
+| `1_constitution.md` | `docs/spec_kit/` | Todo el curso — hay UNO solo |
+| `0_mapa_versiones.md` | `docs/spec_kit/versiones/` | La ruta completa de versiones (no es de Spec Kit: es la brújula del curso) |
+| `2_spec.md` … `8_tasks.md` | `docs/spec_kit/versiones/vN_tema/` | UNA versión |
+| `9_checklist.md` | `docs/spec_kit/versiones/vN_tema/` | UNA versión — la compuerta 3 |
+| `GUIA_IAN.md` | `docs/spec_kit/versiones/vN_tema/` | Cómo reconstruir ESA versión con ayuda de IA. No es un artefacto de Spec Kit sino material del curso: por eso va sin número y con el número de la versión al final |
+
+Tres reglas de nombre que no se rompen:
+
+1. La carpeta de la versión es `vN_tema`, en minúsculas y con guion bajo
+   (`v1_producto_sqlserver`). El tema dice qué agrega la versión.
+2. **El número de un documento nunca cambia entre versiones:** el
+   `6_contracts.md` de la v3 se llama igual que el de la v1. Se compara de
+   una versión a otra sin buscar equivalencias.
+3. Un documento no se renumera ni se renombra al cerrar la versión. Lo que
+   está bajo un tag es historia: se lee, no se toca.
 
 **La regla que une a los ocho:** si está en la spec y no en el código, el
 código está incompleto; si está en el código y no en la spec, sobra — o

@@ -102,7 +102,7 @@ en un **proyecto propio, en una carpeta nueva y vacía**:
    |---|---|
    | `db\bdfacturas.sql` y `db\init.sh` | `db\` |
    | `docs\spec_kit\1_constitution.md` | `docs\spec_kit\` |
-   | Los 7 `.md` de `docs\spec_kit\versiones\v1_producto_sqlserver\` | `docs\spec_kit\versiones\v1_producto_sqlserver\` |
+   | Los 7 `.md` numerados (`2_spec` … `8_tasks`) de `docs\spec_kit\versiones\v1_producto_sqlserver\` | `docs\spec_kit\versiones\v1_producto_sqlserver\` |
 
    (Estos 10 vienen dados — la IA no los genera: las specs se le SUBEN al
    chat, y los scripts de `db/` son la BD completa ya escrita.)
