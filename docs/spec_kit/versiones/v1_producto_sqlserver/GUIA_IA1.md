@@ -232,8 +232,8 @@ REGLAS DE TRABAJO (no negociables):
    Framework, ni Swagger, ni tablas extra, ni motores extra, ni fábricas
    "por si acaso", ni mejoras de tu cosecha. Si crees que falta algo, o si
    un documento admite dos lecturas, PREGÚNTAME antes: no lo resuelvas por
-   tu cuenta ni "asumas" nada. Yo anotaré la respuesta en la sección 6
-   (Clarificaciones) de mi 2_spec.md.
+   tu cuenta ni "asumas" nada. Yo anotaré la respuesta en la sección de
+   Clarificaciones de mi 2_spec.md.
 2. Vamos a seguir 8_tasks.md FASE POR FASE, en orden. En cada fase:
    a. Me explicas en 3-5 líneas qué vamos a hacer y por qué.
    b. Me entregas los archivos de la fase DE A UNO: primero la ruta exacta
@@ -399,6 +399,6 @@ REGLAS (no negociables):
 - **Cace las suposiciones:** cuando el agente diga "asumo que…" o "por
   defecto voy a…", deténgalo. Eso no es un detalle de implementación: es
   una ambigüedad de la spec. Decida usted y anote la respuesta en la
-  sección 6 (Clarificaciones) de su `2_spec.md`.
+  sección de Clarificaciones de su `2_spec.md`.
 - **No le crea "terminado":** pídale la evidencia (la salida real de los
   comandos). El criterio de cierre es el smoke test corrido y en verde.

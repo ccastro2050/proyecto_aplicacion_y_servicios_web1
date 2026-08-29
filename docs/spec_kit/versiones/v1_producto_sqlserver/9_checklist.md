@@ -25,7 +25,7 @@
 - [ ] Ningún requisito usa palabras sin definir: *rápido, amigable,
       eficiente, correcto, adecuado, robusto*.
 - [ ] No queda ningún marcador `[NECESITA ACLARACIÓN: …]` sin resolver en
-      la sección 6 (Clarificaciones) de `2_spec.md`.
+      la sección de Clarificaciones de `2_spec.md`.
 - [ ] Cada RF explica UNA cosa. Si uno necesita un "y" para entenderse, se
       partió en dos.
 - [ ] Los RF no mencionan tecnología (ni Dapper, ni SqlClient, ni nombres
