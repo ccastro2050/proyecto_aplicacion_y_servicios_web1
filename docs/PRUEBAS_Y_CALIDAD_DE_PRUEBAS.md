@@ -80,6 +80,51 @@ Fíjese en el `Verificar(false, …)`: está puesto **después** de la llamada
 para el caso en que la excepción no ocurra. Sin esa línea, una prueba que
 debía fallar y no falló pasaría en silencio.
 
+
+### «verificar» es un `assert` hecho a mano
+
+Si ha visto pruebas en otra parte, le va a faltar una palabra: **`assert`**.
+Ese es el nombre estándar de **la línea que puede fallar**, y cada lenguaje
+tiene la suya:
+
+| Dónde | Cómo se escribe |
+|---|---|
+| Python (pytest) | la palabra reservada `assert` |
+| C# (xUnit) | `Assert.Equal(esperado, obtenido)` |
+| PHP (PHPUnit) | `$this->assertSame(...)` |
+| **Este curso** | `Verificar(condición, "descripción")` |
+
+**Es lo mismo.** En este proyecto está escrito a mano:
+
+```csharp
+// Con xUnit, un framework de pruebas:
+Assert.Equal("T1", (await servicio.ListarAsync(10))[0].Codigo);
+
+// En este curso, sin framework:
+Verificar((await servicio.ListarAsync(10))[0].Codigo == "T1", "crear + listar");
+```
+
+### ¿Por qué a mano, y no con xUnit?
+
+Porque la prueba de capas es **un solo archivo que corre sin instalar nada**.
+Se ejecuta con el mismo comando del lenguaje, sin agregar un framework al
+proyecto, sin configurarlo y sin que haya que aprenderlo en la versión 1.
+
+| | A mano | Con framework |
+|---|---|---|
+| Dependencias | **Ninguna** | Una más, y su configuración |
+| Ver qué hace un `assert` por dentro | **Sí**: son cuatro líneas, ahí están | No: es una caja negra |
+| Descubrir y correr pruebas sueltas | No | **Sí** |
+| Reporte con nombres, tiempos y fallos | No | **Sí** |
+| Preparación compartida (*fixtures*) | No | **Sí** |
+
+**No estamos haciendo otra cosa: estamos haciendo lo mismo sin la
+herramienta.** Cuando el proyecto crezca, xUnit entra y `Verificar` se retira — y para
+entonces usted ya sabrá qué es lo que hace, porque lo escribió.
+
+> **Lo esencial no cambia nunca:** una prueba es una línea que **puede
+> fallar**. Se llame `assert`, `Assert.Equal` o `Verificar`.
+
 ---
 
 ## 3. Los tipos de prueba, y cuál cuesta cuánto
