@@ -84,19 +84,4 @@ public class ServicioUsuario : IServicioUsuario
         }
         return filas;
     }
-
-    public async Task<(int Codigo, string Mensaje)> VerificarContrasenaAsync(string email, string contrasena)
-    {
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrEmpty(contrasena))
-        {
-            throw new ArgumentException("El usuario y la contraseña son obligatorios.");
-        }
-        var resultado = await _repositorio.VerificarContrasenaAsync(email.Trim(), contrasena);
-        return resultado switch
-        {
-            null => (404, "Usuario no encontrado."),
-            true => (200, "Contraseña válida."),
-            false => (401, "Contraseña incorrecta."),
-        };
-    }
 }

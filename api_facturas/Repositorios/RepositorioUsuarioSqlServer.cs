@@ -16,7 +16,8 @@
 //   * Agrega `BCrypt.Net-Next` al proyecto y calcula el hash AQUI, justo
 //     antes de persistir — con costo 12.
 //   * Vuelve a sembrar las ocho filas de la base con hash, EN EL SCRIPT.
-//   * Y `VerificarContrasenaAsync` deja de comparar cadenas y compara hashes.
+//   * Y agrega la comprobación de la contraseña, que hoy no existe: en esta
+//     versión el usuario es una fila más y no hay con qué identificarse.
 //
 // Y la columna ya esta lista para recibirlo: es VARCHAR(200) y no 20, porque
 // un hash de bcrypt ocupa 60 caracteres.
@@ -88,20 +89,5 @@ public class RepositorioUsuarioSqlServer : IRepositorioUsuario
         await using var conexion = CrearConexion();
         return await ErroresSqlServer.TraducirAsync(
             () => conexion.ExecuteAsync(sql, new { email }));
-    }
-
-    public async Task<bool?> VerificarContrasenaAsync(string email, string contrasena)
-    {
-        // La contraseña SE LEE pero no sale del repositorio: se compara aquí.
-        //
-        // Y se compara CADENA CONTRA CADENA, que es exactamente lo que la v3
-        // arregla. Hoy quien lea la tabla tiene todas las contraseñas.
-        const string sql = @"SELECT contrasena FROM usuario WHERE email = @email";
-        await using var conexion = CrearConexion();
-        var guardada = await conexion.QueryFirstOrDefaultAsync<string>(sql, new { email });
-
-        if (guardada == null) { return null; }   // el usuario no existe → 404
-
-        return guardada == contrasena;
     }
 }

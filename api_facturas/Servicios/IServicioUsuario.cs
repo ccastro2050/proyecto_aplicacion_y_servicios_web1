@@ -1,6 +1,8 @@
-// IServicioUsuario — contrato de negocio de usuario (v3).
+// IServicioUsuario — contrato de negocio de usuario.
 // ArgumentException → 400 · NoEncontradoExcepcion → 404 · resto → 500.
-// VerificarContrasenaAsync devuelve el trío del contrato: 200/401/404.
+//
+// SIN comprobación de contraseña: identificarse es la v3. Aquí el usuario
+// es una fila más, y eso es lo que la v3 viene a cambiar.
 
 using ApiFacturas.Modelos;
 
@@ -13,8 +15,4 @@ public interface IServicioUsuario
     Task CrearAsync(string email, string contrasena);
     Task<int> ActualizarContrasenaAsync(string email, string? contrasena);
     Task<int> EliminarAsync(string email);
-
-    /// <summary>(200, "Contraseña válida.") · (401, "Contraseña incorrecta.")
-    /// · (404, "Usuario no encontrado.")</summary>
-    Task<(int Codigo, string Mensaje)> VerificarContrasenaAsync(string email, string contrasena);
 }

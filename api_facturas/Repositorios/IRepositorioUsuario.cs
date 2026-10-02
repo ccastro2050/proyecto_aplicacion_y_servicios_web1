@@ -26,8 +26,4 @@ public interface IRepositorioUsuario
 
     /// <summary>Elimina. Devuelve filas eliminadas (0 = no existía).</summary>
     Task<int> EliminarAsync(string email);
-
-    /// <summary>Compara la contraseña contra el hash almacenado.
-    /// null = el usuario no existe · true/false = coincide o no.</summary>
-    Task<bool?> VerificarContrasenaAsync(string email, string contrasena);
 }

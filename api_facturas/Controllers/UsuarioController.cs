@@ -2,8 +2,8 @@
 // UsuarioController — la capa HTTP de usuario (v3).
 //
 // El CRUD del molde (con la petición de cada verbo reducida a la
-// contraseña) + el endpoint especial verificar-contrasena: el
-// cimiento del login real que llegará con JWT en su versión.
+// contraseña). SIN endpoint de login: la puerta es la v3, y
+// adelantarla aquí le quitaría a esa versión su razón de ser.
 // Las respuestas de lectura JAMÁS incluyen la contraseña (el
 // modelo Usuario no la tiene — no PUEDE filtrarse).
 // ============================================================
@@ -199,47 +199,6 @@ public class UsuarioController : ControllerBase
         catch (Exception e)
         {
             // Con roles asignados, la FK de rol_usuario rechaza → 500:
-            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
-        }
-    }
-
-    // ------------------------------------------------------------
-    // POST /api/usuario/verificar-contrasena — el cimiento del login
-    // ------------------------------------------------------------
-    [HttpPost("verificar-contrasena")]
-    public async Task<IActionResult> VerificarContrasena(
-        [FromQuery(Name = "valor_usuario")] string valorUsuario,
-        [FromQuery(Name = "valor_contrasena")] string valorContrasena)
-    {
-        try
-        {
-            var (codigo, mensaje) = await _servicio.VerificarContrasenaAsync(valorUsuario, valorContrasena);
-            if (codigo == 200)
-            {
-                return Ok(new { estado = 200, mensaje, usuario = valorUsuario });
-            }
-            return StatusCode(codigo, new { estado = codigo, mensaje, usuario = valorUsuario });
-        }
-        catch (ArgumentException e)
-        {
-            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
-        }
-        catch (ConflictoExcepcion e)
-        {
-            // 409, y NO 422: el dato tiene la forma correcta -lo paso la
-            // validacion de la peticion- y lo que se rompe es el ESTADO de la
-            // base. Tres causas posibles: la clave foranea apunta a una fila
-            // que no existe, la clave ya esta usada, o hay otra fila que
-            // depende de esta y el motor no deja borrarla.
-            return StatusCode(409, new
-            {
-                estado = 409,
-                mensaje = "La operacion choca con los datos que ya existen.",
-                detalle = e.Message,
-            });
-        }
-        catch (Exception e)
-        {
             return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
         }
     }
