@@ -1,4 +1,4 @@
-# Modelo de datos — Versión 1: la BD completa (dada) y la tabla producto
+# Modelo de datos — Versión 1: la BD completa (dada) y las SEIS tablas sin FK
 
 > **Versión 1** · La base de datos NO se diseña en esta versión: **viene
 > dada** ([4_research.md](4_research.md) D4). Este documento describe lo que
@@ -9,8 +9,9 @@
 ## 1. La base de datos `bdfacturas` (dada, completa)
 
 El script **provisto** `db/bdfacturas.sql` (dialecto SQL Server) crea la
-base `bdfacturas_sqlserver_local` completa. El contenedor `sqlserver-init`
-lo ejecuta automáticamente la PRIMERA vez (cuando la BD no existe).
+base `bdfacturas_sqlserver_local` completa. SQL Server lo ejecuta SOLO la
+PRIMERA vez (está montado en `/docker-entrypoint-initdb.d/` y corre
+cuando el volumen de datos nace vacío).
 
 **12 tablas** en dos módulos:
 
@@ -62,10 +63,44 @@ public class Producto
 
 ## 4. Reglas de esta versión
 
-- El código de la v1 **solo puede nombrar `producto`** — las otras 11
-  tablas existen pero son territorio de la v2 en adelante.
+- El código de la v1 **solo puede nombrar las SEIS tablas sin clave
+  foránea** —`producto`, `empresa`, `persona`, `rol`, `ruta`, `usuario`—. Las
+  otras seis existen en la base pero son territorio de la v2.
+- **`usuario` y `rol` SÍ son de esta versión**, aunque sean del control de
+  acceso: el criterio es no tener clave foránea, y no la tienen. Lo que llega
+  en la v3 **no es su CRUD** —ese es este— sino la sesión y el permiso.
 - La BD **no se modifica**: ni columnas nuevas, ni índices, ni datos
   semilla distintos. Si algo parece faltar, es de otra versión.
 - El reset completo es de Docker, no de SQL:
   `docker compose down -v && docker compose up -d` (borra el volumen y el
   inicializador vuelve a crear todo).
+
+---
+
+## Lo que el motor cambia, y se descubrió EJECUTANDO
+
+> Las seis diferencias de abajo no salieron de leer documentación: salieron de
+> correr el mismo código contra los dos motores y mirar qué respondía distinto.
+> Están aquí porque la v5 —el segundo motor— vive de que estén escritas.
+
+| | En SQL Server (este proyecto) | En PostgreSQL (la v5) |
+|---|---|---|
+| **La llave autoincremental** | `INT IDENTITY(1,1)` | `SERIAL` |
+| **El valor recién insertado** | `SCOPE_IDENTITY()`, en un `SELECT` aparte | `RETURNING`, en el mismo `INSERT` |
+| **La clave foránea violada** | error **547** | `SQLSTATE` **23503** |
+| **El duplicado** | **2627** (llave primaria) y **2601** (índice único) — **son dos** | `SQLSTATE` **23505**, uno solo |
+| **Concatenar texto agrupado** | `STRING_AGG(...)` **sin `DISTINCT`**: T-SQL no lo acepta | `STRING_AGG(DISTINCT ...)` sí |
+| **El tipo de `COUNT()` y `SUM(int)`** | `int` | `bigint` |
+
+> **El 2601 es el que se olvida.** Quien venga de PostgreSQL traduce el 23505
+> a 2627 y se queda tranquilo: la llave primaria duplicada responde 409. Pero
+> un **índice único** violado —dos usuarios con el mismo correo— levanta
+> **2601**, que no estaba en la traducción, y entonces el 409 se vuelve un
+> **500**. Funciona en la prueba obvia y falla en la otra.
+
+> **Y el tipo de `COUNT()` muerde al revés.** En PostgreSQL devuelve `bigint`,
+> así que un modelo con `int` revienta al deserializar — ruidoso, se arregla
+> en diez minutos. En SQL Server devuelve `int`, y entonces un
+> `SUM(total) / COUNT(*)` con `total` decimal **trunca** el promedio sin
+> quejarse. El primero se cae; el segundo da un número equivocado. El segundo
+> es peor.

@@ -1,4 +1,4 @@
-# Especificación — Versión 1 del proyecto: api_facturas con producto + SQL Server
+# Especificación — Versión 1: las SEIS tablas sin clave foránea, con su interfaz gráfica
 
 > **Versión 1** del desarrollo incremental ([mapa de versiones](../0_mapa_versiones.md)).
 > Rige la constitución del proyecto: [../../1_constitution.md](../../1_constitution.md).
@@ -48,14 +48,29 @@ servicio → repositorio, comunicados por **interfaces de C#**.
 
 La v1 es pequeña a propósito: su valor no está en la funcionalidad sino en
 dejar el **esqueleto arquitectónico correcto** sobre el que las versiones
-siguientes agregan tablas (v2), motores (v3, v4) y el
-frontend Blazor (v5) **sin reescribir lo construido**.
+siguientes agregan las tablas con clave foránea (v2), el control de acceso
+(v3) y el aplicativo completo (v4) **sin reescribir lo construido**.
+
+Y el esqueleto incluye **las dos mitades**: la API y la interfaz. Que se
+construyan en paralelo desde la v1 es lo que impide descubrir a la tercera
+versión que el contrato era incómodo de pintar.
 
 ## 2. Alcance
 
+> **Qué define la v1:** **las tablas que NO tienen clave foránea.** En
+> `bdfacturas` son **seis** —`producto` · `empresa` · `persona` · `rol` · `ruta` · `usuario`—, y se pueden
+> llenar sin que exista nada más. Por eso son las primeras.
+>
+> **Y la versión entrega su API Y SU INTERFAZ GRÁFICA.** Media versión no es una
+> versión.
+
 **Incluye:**
-- CRUD de `producto`: listar, obtener por código, crear, reemplazar,
-  actualizar parcialmente, eliminar.
+- **CRUD de los SEIS recursos**: listar, obtener por clave, crear, reemplazar,
+  actualizar parcialmente y eliminar. Son **seis rebanadas verticales
+  idénticas salvo los campos** — y que se repitan es el punto: con una sola
+  no aparece la pregunta de si conviene un genérico.
+- **Una INTERFAZ GRÁFICA por recurso**, con dirección propia (`/productos`,
+  `/empresas`, …), nunca una ruta con el nombre de la tabla como parámetro.
 - **Modelo entidad** (`Producto`): la clase con las 4 propiedades tipadas
   (en C#, las propiedades `{ get; set; }` SON los getters/setters del
   lenguaje).
@@ -77,12 +92,16 @@ frontend Blazor (v5) **sin reescribir lo construido**.
   navegador.
 
 **No incluye (y es deliberado — ver [mapa de versiones](../0_mapa_versiones.md)):**
-- **Ningún frontend** (Blazor llega en v5).
-- Endpoints para otras entidades (v2) — las otras 11 tablas EXISTEN en la
-  BD, pero el código de la v1 solo puede nombrar `producto`.
-- Otros motores y la fábrica de repositorios (v3, v4).
-- ORM de entidades (Entity Framework) y autenticación — no son de la
-  v1 (Dapper NO es ORM de entidades: es el micro-ejecutor del Art. 2).
+- **Las SEIS tablas con clave foránea** —`cliente`, `vendedor`, `factura`,
+  `productosporfactura`, `rol_usuario`, `rutarol`—: son la **v2**. Existen en
+  la base desde la v1 (Artículo 5), pero el código de esta versión **no las
+  puede nombrar**.
+- **JWT, sesiones y control de acceso por rol**: es la **v3**. Ojo: el CRUD de
+  `usuario` y `rol` **sí es de esta versión** —no tienen FK—; lo que llega en
+  la v3 **no es su CRUD, es la puerta**.
+- Consultas multitabla, dashboard, manual de marca y publicación: la **v4**.
+- ORM de entidades (Entity Framework) — Dapper NO es ORM de entidades: es el
+  micro-ejecutor del Artículo 2.
 
 ## 3. Requisitos funcionales
 
@@ -130,14 +149,14 @@ inexistente → 404.
   conoce HTTP ni el motor; el repositorio no conoce HTTP. Contratos con
   `interface` de C#.
 - **RNF2 — SQL a la vista:** el SQL se escribe a mano y Dapper solo lo
-  ejecuta y mapea (sin Entity Framework); paquetes:
-  `Microsoft.Data.SqlClient`, `Dapper` y `Swashbuckle` (Artículo 2).
+  ejecuta y mapea (sin Entity Framework); paquetes: `Microsoft.Data.SqlClient`, `Dapper`
+  y `Swashbuckle` (Artículo 2).
 - **RNF3 — SQL SIEMPRE parametrizado** (`@parametro`); nada de concatenar
   valores.
 - **RNF4 — Asíncrona:** todo el acceso a datos con `async/await`.
 - **RNF5 — Errores uniformes:** `{estado, mensaje, detalle}` (y
   `errores:[…]` en el 422); ArgumentException→400 ·
-  NoEncontradoExcepcion→404 · SqlException y demás→500.
+  NoEncontradoExcepcion→404 · Microsoft.Data.SqlClientException y demás→500.
 - **RNF6 — Sin anticipación:** ni fábrica multi-motor ni selección de motor
   en v1 (los introduce la v3 cuando exista el segundo motor).
 
@@ -165,27 +184,55 @@ inexistente → 404.
    `docker compose exec`) ejecuta el servicio con un repositorio FALSO en
    memoria — sin SQL Server — y todas las verificaciones pasan.
 
+### Y los de LA INTERFAZ GRÁFICA, que son la otra mitad de la versión
+
+7. **`http://localhost:8096/productos` lista los 8 productos**, cada uno con
+   su código, nombre, stock y valor unitario. La dirección es **propia del
+   recurso** —`/productos`—, no una ruta con el nombre de la tabla como
+   parámetro.
+8. **Se crea un producto desde la interfaz gráfica** y aparece en la lista sin
+   recargar a mano. Y si la API lo rechaza —código duplicado, stock
+   negativo—, **el mensaje sale EN LA INTERFAZ GRÁFICA**, no en la consola del
+   navegador, y **lo que la persona había escrito NO se borra**.
+9. **Los dos botones de guardar existen y hacen cosas distintas:** «Guardar
+   la ficha completa» (el `PUT`: si falta un campo, la API responde 422) y
+   «Guardar solo lo que cambié» (el `PATCH`: el mismo cuerpo responde 200).
+   **La interfaz gráfica no le dice `PUT` ni `PATCH` ni `422` a la persona.**
+10. **Con la API apagada, la interfaz gráfica SIGUE EN PIE.** Se comprueba así:
+
+    ```powershell
+    docker compose stop api-facturas
+    ```
+
+    Recargue `http://localhost:8096/productos`: tiene que mostrar el menú y
+    un aviso de que no se pudo conectar, **y ni una sola fila**. Si siguiera
+    mostrando los productos, el front estaría leyendo de donde no debe — o no
+    maneja el caso de que la API no responda, que es el mismo problema visto
+    de otro lado.
+
+> **Una versión no está cerrada si la API responde y la interfaz gráfica no.** Los
+> criterios 7 a 10 pesan lo mismo que los seis de arriba.
+
 ## 6. Clarificaciones
 
 > **Qué es esta sección:** el registro de las ambigüedades detectadas ANTES
 > de planear, con la respuesta que se acordó y su razón. Es **la compuerta
-> 1** del método (ver [SDD_SPECKIT §2.2](../../../SDD_SPECKIT.md)):
-> mientras quede un `[NECESITA ACLARACIÓN: …]` en los requisitos de arriba,
-> esta versión no pasa a la planeación.
+> 1** del método (ver [SDD_SPECKIT](../../../SDD_SPECKIT.md)): mientras
+> quede un `[NECESITA ACLARACIÓN: …]` en los requisitos de arriba, esta
+> versión no pasa a la planeación.
 >
-> En la v1 esta sección se escribió **al cerrar la versión**, reuniendo las
-> preguntas que de hecho se resolvieron mientras se especificaba. De la v2
-> en adelante se llena **en vivo**, antes del `3_plan.md` — que es como
-> debe ser.
+> Las entradas de abajo se reconstruyeron **al cerrar la versión**, a
+> partir de las decisiones que sus propios contratos ya dejaban fijadas.
+> De aquí en adelante esta sección se llena **en vivo**, antes del
+> `3_plan.md` — que es como debe ser.
 
 | # | La pregunta | La respuesta acordada, con su razón | Dónde quedó |
 |---|---|---|---|
-| C1 | El listado sin filas, ¿es un error o un resultado? | Un resultado: **204 sin cuerpo**. Vacío no es error. | RF1 · contrato §2 |
-| C2 | `?limite=0` o negativo, ¿422 o 400? | **400**: la FORMA del dato es correcta (sí es un entero); lo que se rompe es una regla de negocio. El 422 se reserva para el body mal formado. | RF1 · contrato §0 y §2 |
-| C3 | `stock: 7.5` o `"texto"`, ¿lo rechaza la API o lo deja llegar a la BD? | Lo rechaza la **petición** con 422: el TIPO también es regla, porque la petición declara `int?`. Nunca llega a la BD. | Criterio 5 · [D5](4_research.md) |
-| C4 | Crear con un código que ya existe, ¿409 o 500? | **500**, con el error del motor en `detalle`: en la v1 la PK la defiende la BD, no la API. Convertirlo en 409 sería lógica de negocio que esta versión no pide. | Criterio 5 · contrato §4 |
-| C5 | `DELETE`, ¿borrado físico o lógico? | **Físico**: la tabla `producto` no tiene columna de estado. El borrado lógico llega con la anulación de facturas, en una versión posterior. | RF6 · [5_data_model](5_data_model.md) §2 |
-| C6 | `PATCH` con el body vacío, ¿200 sin hacer nada, o error? | **400**: pedir una actualización sin decir qué actualizar es una regla de negocio rota. | Contrato §6 |
+| C1 | El listado sin filas, ¿es un error o un resultado? | Un resultado: **204 sin cuerpo**. Vacío no es error. | RF de listar · contrato del `GET` |
+| C2 | `?limite=0` o negativo, ¿422 o 400? | **400**: la FORMA del dato es correcta (sí es un entero); lo que se rompe es una regla de negocio. El 422 se reserva para el body mal formado. | Contrato del `GET` · convenciones |
+| C3 | Un número con decimales o texto donde va un entero, ¿lo rechaza la API o lo deja llegar a la BD? | Lo rechaza la **petición** con 422: el TIPO también es regla, y el valor nunca llega a la BD. | Criterios de aceptación · contrato del `POST` |
+| C4 | Crear con una llave que ya existe, ¿409 o 500? | **500**, con el error del motor en `detalle`: la llave la defiende la BD, no la API. Convertirlo en 409 sería lógica de negocio que esta versión no pide. | Convenciones de error · contrato del `POST` |
+| C5 | `PATCH` con el body vacío, ¿200 sin hacer nada, o error? | **400**: pedir una actualización sin decir qué actualizar es una regla de negocio rota. | Contrato del `PATCH` |
 
 **Cómo se escribe una entrada nueva:** la pregunta tal como se hizo (no
 "revisar el borrado", sino "¿físico o lógico?"), la respuesta **con su
@@ -195,12 +242,13 @@ no lo reemplaza.
 
 ## 7. Definición de TERMINADA
 
-La v1 está terminada — y solo entonces se escribe la spec de la v2 — cuando:
+Esta versión está terminada — y solo entonces se escribe la spec de la
+siguiente — cuando:
 
-1. Los **6 criterios de aceptación** de la sección 5 pasan, verificados con
-   el smoke test de [7_quickstart.md](7_quickstart.md), **corrido por una
-   persona**. "Me funciona" no es evidencia.
+1. Todos los **criterios de aceptación** pasan, verificados con el smoke
+   test de [7_quickstart.md](7_quickstart.md), **corrido por una persona**.
+   "Me funciona" no es evidencia.
 2. La lista de [9_checklist.md](9_checklist.md) está en verde y firmada.
 3. No queda ningún `[NECESITA ACLARACIÓN: …]` en este documento.
-4. Se hace commit y **tag `v1`** (Artículo 1 de la
-   [constitución](../../1_constitution.md)).
+4. Se hace commit y **tag** de la versión, según la
+   [constitución](../../1_constitution.md).

@@ -1,4 +1,4 @@
-# Contratos HTTP — Versión 1: los 7 endpoints con formatos exactos
+# Contratos HTTP — Versión 1: seis recursos × seis endpoints
 
 > **Versión 1** · Base: `http://localhost:8032`. Estos contratos se cumplen
 > **al pie de la letra** (constitución, Artículo 7): mismos verbos, rutas,
@@ -19,10 +19,31 @@
 | El producto no existe | **404** |
 | La BD rechaza (PK duplicada) o falla | **500** (error del motor en `detalle`) |
 
+> ## Los SEIS recursos de la v1
+>
+> Lo que sigue documenta `producto` **en detalle**. Los otros cinco
+> —`empresa`, `persona`, `rol`, `ruta`, `usuario`— tienen **exactamente el
+> mismo contrato**, cambiando la ruta y los campos:
+>
+> | Recurso | Ruta base | Clave | Campos del body |
+> |---|---|---|---|
+> | `producto` | `/api/producto` | `codigo` (texto) | `nombre`, `stock`, `valorunitario` |
+> | `empresa` | `/api/empresa` | `codigo` (texto) | `nombre` |
+> | `persona` | `/api/persona` | `codigo` (texto) | `nombre`, `email`, `telefono` |
+> | `rol` | `/api/rol` | `id` (**SERIAL**) | `nombre` |
+> | `ruta` | `/api/ruta` | `id` (**SERIAL**) | `ruta`, `descripcion` |
+> | `usuario` | `/api/usuario` | `email` (texto) | `contrasena` |
+>
+> **Las dos de llave `IDENTITY` tienen una diferencia que importa:** el `POST`
+> **no manda el `id`** —lo genera la base—, así que su petición de creación no
+> lo lleva. Pedirlo obligaría al cliente a inventar una llave.
+>
+> **Son 36 endpoints** (seis recursos × seis verbos) más el de diagnóstico.
+
 ## 1. `GET /` — Diagnóstico
 
 ```
-→ 200 {"mensaje":"API Facturas funcionando","version":"v1","contratos":"docs/spec_kit/versiones/v1_producto_sqlserver/6_contracts.md"}
+→ 200 {"mensaje":"API Facturas funcionando","version":"v1","contratos":"docs/spec_kit/versiones/v1_sin_fk/6_contracts.md"}
 ```
 
 Además: `GET /swagger` abre la **documentación interactiva** (Swagger UI) —

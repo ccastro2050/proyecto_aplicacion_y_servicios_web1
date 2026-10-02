@@ -1,4 +1,4 @@
-# Tareas — Versión 1: api_facturas con producto + SQL Server (C#/ASP.NET Core)
+# Tareas — Versión 1: las seis tablas sin FK, con su interfaz gráfica
 
 > **Versión 1** · El orden de construcción, partiendo de CERO. Cada fase
 > termina en algo **verificable**. Requisitos: [2_spec.md](2_spec.md) ·
@@ -8,21 +8,19 @@
 ---
 
 ## Fase 0 — Base de datos y esqueleto
-- [ ] Copiar a `db/` los DOS archivos **provistos** con esta versión:
-      `bdfacturas.sql` (la BD completa en dialecto SQL Server — no se
-      escribe ni se genera con IA) e `init.sh` (el inicializador; ver
-      [3_plan.md](3_plan.md) §4.6).
-- [ ] Crear el `docker-compose.yml` con los servicios `sqlserver` (imagen
-      2022, volumen `mssqldata`, puerto 11463, healthcheck con sqlcmd) y
-      `sqlserver-init` (misma imagen, monta `./db`, corre `init.sh` y
-      termina) — ver [3_plan.md](3_plan.md) §5. Levantar:
-      `docker compose up -d`.
+- [ ] Copiar a `db/` el archivo **provisto** con esta versión:
+      `bdfacturas.sql` (la BD completa en dialecto SQL Server —
+      no se escribe ni se genera con IA; ver [3_plan.md](3_plan.md) §4.6).
+- [ ] Crear el `docker-compose.yml` con el servicio `sqlserver` (imagen
+      16-alpine, volumen `pgdata`, puerto 11463, healthcheck con
+      pg_isready, y el script montado en `/docker-entrypoint-initdb.d/`)
+      — ver [3_plan.md](3_plan.md) §5. Levantar: `docker compose up -d`.
 - [ ] Crear `api_facturas/` con subcarpetas `Modelos/`, `Peticiones/`, `Controllers/`,
       `Servicios/`, `Repositorios/`, `Excepciones/` y `pruebas/`.
 
-**Verificar:** `docker compose ps -a` muestra `sqlserver (healthy)` y
-`sqlserver-init` en `Exited (0)`; un cliente SQL a `localhost:11463`
-(usuario `sa`) ve las **12 tablas** y `SELECT count(*) FROM producto` da **8**.
+**Verificar:** `docker compose ps` muestra `postgres (healthy)`; un
+cliente SQL a `localhost,11463` (usuario `sa`) ve las **12 tablas**
+y `SELECT count(*) FROM producto` da **8**.
 
 ## Fase 1 — El proyecto .NET y el modelo Producto (la clase entidad)
 - [ ] `ApiFacturas.csproj`: proyecto Web de .NET 10, paquete
@@ -51,7 +49,7 @@
       async ([3_plan.md](3_plan.md) §4.1).
 - [ ] `Servicios/IServicioProducto.cs`: interface del servicio.
 - [ ] `Repositorios/RepositorioProductoSqlServer.cs`: Dapper (`QueryAsync`/`ExecuteAsync`) con los SQL
-      de [3_plan.md](3_plan.md) §4.4 — `TOP (@limite)`, parámetros `@`,
+      de [3_plan.md](3_plan.md) §4.4 — `LIMIT @limite`, parámetros `@`,
       conexión por operación con `await using`, y el UPDATE con SET
       dinámico de lista blanca.
 
@@ -85,20 +83,61 @@
 con `errores[]`), y el contraste PUT vs PATCH con `{"stock": 99}` (422 vs
 200).
 
-## Fase 6 — Docker: un solo comando
+## Fase 6 — LA INTERFAZ GRÁFICA (la otra mitad de la versión)
+
+El front en **Blazor Server / .NET 10**, en `front_blazor/`, en su propio
+contenedor y en el puerto **8096**.
+
+| Qué se escribe | Dónde |
+|---|---|
+| El `.csproj` **sin un solo paquete de datos** | `FrontFacturas.csproj` |
+| La clase `Producto` **del front** | `Modelos/Producto.cs` |
+| `ServicioProducto`: el único sitio que sabe de HTTP | `Servicios/ServicioProducto.cs` |
+| El cascarón y el menú | `Components/App.razor` · `Routes.razor` · `Layout/` |
+| La interfaz gráfica del recurso | `Components/Pages/Productos.razor` |
+| Bootstrap **servido desde el repositorio** | `wwwroot/lib/bootstrap/` |
+| El CSS del proyecto, **encima** de Bootstrap | `wwwroot/app.css` |
+
+**Tres cosas que se van a querer hacer y no se deben:**
+
+| | Por qué no |
+|---|---|
+| **Compartir la clase `Producto`** con una referencia de proyecto | Están las dos en C#, así que *funcionaría*. Ata los dos procesos: un cambio interno de la API rompería el front sin que nadie tocara el contrato |
+| **Servir las páginas desde la misma API** | Son dos procesos, y eso hay que poder demostrarlo apagando uno |
+| **Meter Bootstrap por CDN** | Bootstrap si, el CDN no: se copia a `wwwroot/lib/`. Un front que necesita internet para verse bien no arranca en un salón sin red |
+
+**Verificación:** `http://localhost:8096/productos` lista los 8 productos, se
+crea uno desde la interfaz gráfica, y **los dos botones de guardar** hacen cosas
+distintas (criterios 7 a 9 de [2_spec.md](2_spec.md)).
+
+## Fase 7 — La prueba que separa los dos procesos
+
+```powershell
+docker compose stop api-facturas
+```
+
+Recargue `http://localhost:8096/productos`.
+
+**Verificación:** el menú sigue, hay un aviso de que no se pudo conectar, y
+**no hay ni una fila**. Es el criterio 10, y es el único que no se puede
+simular: o los dos procesos están separados, o no.
+
+Después, `docker compose start api-facturas` y la interfaz gráfica vuelve a listar.
+
+## Fase 8 — Docker: un solo comando
 - [ ] `api_facturas/Dockerfile`: imagen `dotnet/sdk:10.0`, `dotnet watch`,
       `ASPNETCORE_URLS` en 8032, `DOTNET_USE_POLLING_FILE_WATCHER`.
 - [ ] Agregar al `docker-compose.yml` el servicio `api-facturas`: `build:`,
       código montado + `bin/` y `obj/` en volúmenes anónimos, puerto 8032,
       variable `ConnectionStrings__SqlServer` con el host interno
-      `sqlserver,1433`, y `depends_on` de `sqlserver-init` con
-      `condition: service_completed_successfully`.
+      `postgres:5432`, y `depends_on` de `postgres` con
+      `condition: service_healthy`.
 
 **Verificar:** `docker compose down` y luego `docker compose up -d --build`
 — UN comando deja BD y API funcionando (criterio 1); editar un `.cs`,
 guardar, y verificar que recompila y reinicia solo.
 
-## Fase 7 — Cierre de la versión
+## Fase 9 — Cierre de la versión
 - [ ] Correr el smoke test completo de [7_quickstart.md](7_quickstart.md)
       §2 — equivale a los 6 criterios de aceptación de
       [2_spec.md](2_spec.md) §5.

@@ -184,7 +184,7 @@ es **reconstruirla usted mismo, en una carpeta propia (fuera del clon)**,
 siguiendo las especificaciones — con o sin ayuda de IA:
 
 > 🤖 ¿Va a trabajar con IA? Siga la **[Guía para construir la versión con
-> IA](docs/spec_kit/versiones/v1_producto_sqlserver/GUIA_IA1.md)** — cubre los dos caminos con su prompt exacto listo
+> IA](docs/spec_kit/versiones/v1_sin_fk/GUIA_IA1.md)** — cubre los dos caminos con su prompt exacto listo
 > para copiar: **chat web** (Gemini, DeepSeek, ChatGPT: qué archivos
 > subirle) e **IDE agéntico** (Antigravity, Cursor, Claude Code: cómo
 > supervisar al agente).
@@ -282,13 +282,13 @@ de aceptación (commit + tag). Mapa completo:
 | Documento | Contenido |
 |---|---|
 | [1_constitution.md](docs/spec_kit/1_constitution.md) | Las reglas permanentes del proyecto |
-| [2_spec.md](docs/spec_kit/versiones/v1_producto_sqlserver/2_spec.md) | QUÉ construir y los criterios de aceptación |
-| [3_plan.md](docs/spec_kit/versiones/v1_producto_sqlserver/3_plan.md) | CÓMO: stack, estructura y diseño de las capas |
-| [4_research.md](docs/spec_kit/versiones/v1_producto_sqlserver/4_research.md) | Decisiones y alternativas (el porqué) |
-| [5_data_model.md](docs/spec_kit/versiones/v1_producto_sqlserver/5_data_model.md) | La BD completa (dada) y la tabla producto |
-| [6_contracts.md](docs/spec_kit/versiones/v1_producto_sqlserver/6_contracts.md) | Los 7 endpoints con formatos exactos |
-| [7_quickstart.md](docs/spec_kit/versiones/v1_producto_sqlserver/7_quickstart.md) | Arranque y smoke test |
-| [8_tasks.md](docs/spec_kit/versiones/v1_producto_sqlserver/8_tasks.md) | Orden de construcción por fases verificables |
+| [2_spec.md](docs/spec_kit/versiones/v1_sin_fk/2_spec.md) | QUÉ construir y los criterios de aceptación |
+| [3_plan.md](docs/spec_kit/versiones/v1_sin_fk/3_plan.md) | CÓMO: stack, estructura y diseño de las capas |
+| [4_research.md](docs/spec_kit/versiones/v1_sin_fk/4_research.md) | Decisiones y alternativas (el porqué) |
+| [5_data_model.md](docs/spec_kit/versiones/v1_sin_fk/5_data_model.md) | La BD completa (dada) y la tabla producto |
+| [6_contracts.md](docs/spec_kit/versiones/v1_sin_fk/6_contracts.md) | Los 7 endpoints con formatos exactos |
+| [7_quickstart.md](docs/spec_kit/versiones/v1_sin_fk/7_quickstart.md) | Arranque y smoke test |
+| [8_tasks.md](docs/spec_kit/versiones/v1_sin_fk/8_tasks.md) | Orden de construcción por fases verificables |
 
 ## 5. Material conceptual del curso
 

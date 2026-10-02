@@ -1,4 +1,4 @@
-# Investigación y decisiones — Versión 1: producto + SQL Server (C#/ASP.NET Core)
+# Investigación y decisiones — Versión 1: las seis tablas sin clave foránea
 
 > **Versión 1** · **Lectura opcional** (el porqué de las decisiones del plan,
 > con las alternativas que se evaluaron y descartaron). Complementa a
@@ -20,7 +20,7 @@ parametrizado.
 
 **Opciones evaluadas:** (a) Entity Framework Core (ORM de entidades) ·
 (b) **Dapper** (micro-ejecutor) · (c) ADO.NET "crudo"
-(`SqlConnection` + `SqlCommand` con el mapeo `GetString(0)` a mano).
+(`Microsoft.Data.SqlClientConnection` + `Microsoft.Data.SqlClientCommand` con el mapeo `GetString(0)` a mano).
 
 **Criterios de ingeniería y comparación:**
 
@@ -98,19 +98,19 @@ didáctico: **el tipo es regla** — `stock` es `int?`, así que un `7.5` o un
 (`Modelos/`, en v1 `Producto`). Por eso viven en su propia carpeta
 `Peticiones/`: describen lo que LLEGA en cada verbo, no lo que ES.
 
-## D6 — SQL Server como primer motor (y su inicializador)
+## D6 — SQL Server como primer motor
 
-**Alternativas descartadas:** empezar con un motor liviano y dejar SQL
-Server para después.
-**Decisión:** v1 arranca con SQL Server 2022 en contenedor (edición
-Developer, gratuita) + un contenedor `sqlserver-init` que crea la BD la
-primera vez.
-**Por qué:** es el motor del ecosistema del curso (C#/.NET) y el que los
-estudiantes encontrarán en las empresas del mundo Microsoft. El precio es
-doble: pide ~2 GB de RAM, y **no ejecuta scripts montados automáticamente**
-— de ahí el inicializador, que además es lección de Docker (un contenedor
-que hace su trabajo y termina, con `service_completed_successfully` como
-semáforo para la API).
+**Alternativas descartadas:** empezar con SQL Server (el motor "natural"
+del ecosistema .NET) o con MariaDB.
+**Decisión:** v1 arranca con SQL Server 2022 en contenedor (alpine, ~50 MB).
+**Por qué:** es el motor libre de referencia de la industria, liviano
+(arranca en segundos, sin requisitos de RAM) y AMIGO de Docker: ejecuta
+solo los scripts montados en `/docker-entrypoint-initdb.d/`, así que el
+compose de la v1 queda en DOS servicios sin contenedor inicializador. Y
+deja una lección pendiente a propósito: cuando llegue el segundo motor
+(SQL Server), que NO tiene ese mecanismo, se entenderá el valor del
+patrón inicializador por contraste. Microsoft.Data.SqlClient (el proveedor ADO.NET) es de
+primera clase en .NET — el ecosistema no obliga a casarse con su motor.
 
 ## D7 — dotnet watch dentro del contenedor (imagen SDK, no runtime)
 
@@ -124,13 +124,13 @@ El matiz de los volúmenes anónimos importa: los compilados de Linux (los
 del contenedor) no deben mezclarse con los de Windows (los del IDE del
 estudiante).
 
-## D8 — Docker compose desde la v1 (tres servicios)
+## D8 — Docker compose desde la v1 (dos servicios)
 
 **Alternativa descartada:** `docker run` a mano y la API por fuera.
-**Decisión:** `docker-compose.yml` con `sqlserver` + `sqlserver-init` +
-`api-facturas` desde v1 — `docker compose up -d --build` deja todo
-funcionando.
+**Decisión:** `docker-compose.yml` con `postgres` + `api-facturas` desde
+v1 — `docker compose up -d --build` deja todo funcionando.
 **Por qué:** el Artículo 4 de la constitución ("un solo comando") es
-permanente — y la constitución gana. El compose de v1 **crece por
-versiones** (v3 suma PostgreSQL, v4 MariaDB, v6 el front): la
-infraestructura también se construye por incrementos.
+permanente — y la constitución gana. El compose de v1 ya trae **sus tres
+servicios** —la base, la API y la interfaz gráfica— y **crece por versiones**: la
+infraestructura también se construye por incrementos, pero ninguna versión
+nace sin su front.
