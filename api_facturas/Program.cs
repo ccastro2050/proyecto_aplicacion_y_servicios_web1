@@ -34,10 +34,34 @@ var builder = WebApplication.CreateBuilder(args);
 var cadenaConexion = builder.Configuration.GetConnectionString("SqlServer")
     ?? throw new InvalidOperationException("Falta la cadena de conexión 'SqlServer'.");
 
-// AddScoped = "una instancia por petición HTTP" (cada request estrena la suya):
+// AddScoped = "una instancia por peticion HTTP" (cada request estrena la suya).
+// Es el ensamblador, y crece de a una linea por recurso. Esa lista larga es
+// deliberada: cuando llegue el SEGUNDO MOTOR -la v5- es el argumento de la
+// fabrica, y el dolor de hoy es lo que la justifica.
+
+// ------------------------------------------------------------
+// LA v1 — las SEIS tablas SIN clave foranea
+// ------------------------------------------------------------
+// El criterio de la v1 es ese y no otro: ninguna de estas seis depende de
+// otra fila para existir, asi que se pueden construir en cualquier orden.
 builder.Services.AddScoped<IRepositorioProducto>(
     _ => new RepositorioProductoSqlServer(cadenaConexion));
 builder.Services.AddScoped<IServicioProducto, ServicioProducto>();
+builder.Services.AddScoped<IRepositorioEmpresa>(
+    _ => new RepositorioEmpresaSqlServer(cadenaConexion));
+builder.Services.AddScoped<IServicioEmpresa, ServicioEmpresa>();
+builder.Services.AddScoped<IRepositorioPersona>(
+    _ => new RepositorioPersonaSqlServer(cadenaConexion));
+builder.Services.AddScoped<IServicioPersona, ServicioPersona>();
+builder.Services.AddScoped<IRepositorioRol>(
+    _ => new RepositorioRolSqlServer(cadenaConexion));
+builder.Services.AddScoped<IServicioRol, ServicioRol>();
+builder.Services.AddScoped<IRepositorioRuta>(
+    _ => new RepositorioRutaSqlServer(cadenaConexion));
+builder.Services.AddScoped<IServicioRuta, ServicioRuta>();
+builder.Services.AddScoped<IRepositorioUsuario>(
+    _ => new RepositorioUsuarioSqlServer(cadenaConexion));
+builder.Services.AddScoped<IServicioUsuario, ServicioUsuario>();
 
 // ------------------------------------------------------------
 // 2. Los controladores y la validación de la petición (el 422)

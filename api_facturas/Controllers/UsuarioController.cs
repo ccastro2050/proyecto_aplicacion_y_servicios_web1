@@ -1,0 +1,176 @@
+// ============================================================
+// UsuarioController — la capa HTTP de usuario (v3).
+//
+// El CRUD del molde (con la petición de cada verbo reducida a la
+// contraseña) + el endpoint especial verificar-contrasena: el
+// cimiento del login real que llegará con JWT en su versión.
+// Las respuestas de lectura JAMÁS incluyen la contraseña (el
+// modelo Usuario no la tiene — no PUEDE filtrarse).
+// ============================================================
+
+using ApiFacturas.Excepciones;
+using ApiFacturas.Peticiones;
+using ApiFacturas.Servicios;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ApiFacturas.Controllers;
+
+[ApiController]
+[Route("api/usuario")]
+public class UsuarioController : ControllerBase
+{
+    private readonly IServicioUsuario _servicio;
+
+    public UsuarioController(IServicioUsuario servicio)
+    {
+        _servicio = servicio;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Listar([FromQuery] int limite = 1000)
+    {
+        try
+        {
+            var usuarios = await _servicio.ListarAsync(limite);
+            if (usuarios.Count == 0) { return NoContent(); }
+            return Ok(new { tabla = "usuario", limite, total = usuarios.Count, datos = usuarios });
+        }
+        catch (ArgumentException e)
+        {
+            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+
+    [HttpGet("{email}")]
+    public async Task<IActionResult> Obtener(string email)
+    {
+        try
+        {
+            return Ok(await _servicio.ObtenerAsync(email));
+        }
+        catch (ArgumentException e)
+        {
+            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
+        }
+        catch (NoEncontradoExcepcion e)
+        {
+            return StatusCode(404, new { estado = 404, mensaje = "Usuario no encontrado.", detalle = e.Message });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Crear([FromBody] UsuarioCrear body)
+    {
+        try
+        {
+            await _servicio.CrearAsync(body.Email!, body.Contrasena!);
+            return Ok(new { estado = 200, mensaje = "Usuario creado exitosamente." });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+
+    [HttpPut("{email}")]
+    public async Task<IActionResult> Reemplazar(string email, [FromBody] UsuarioReemplazo body)
+    {
+        try
+        {
+            var filas = await _servicio.ActualizarContrasenaAsync(email, body.Contrasena);
+            return Ok(new { estado = 200, mensaje = "Usuario reemplazado exitosamente.", filasAfectadas = filas });
+        }
+        catch (ArgumentException e)
+        {
+            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
+        }
+        catch (NoEncontradoExcepcion e)
+        {
+            return StatusCode(404, new { estado = 404, mensaje = "Usuario no encontrado.", detalle = e.Message });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+
+    [HttpPatch("{email}")]
+    public async Task<IActionResult> Actualizar(string email, [FromBody] UsuarioActualizar body)
+    {
+        try
+        {
+            var filas = await _servicio.ActualizarContrasenaAsync(email, body.Contrasena);
+            return Ok(new { estado = 200, mensaje = "Usuario actualizado exitosamente.", filasAfectadas = filas });
+        }
+        catch (ArgumentException e)
+        {
+            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
+        }
+        catch (NoEncontradoExcepcion e)
+        {
+            return StatusCode(404, new { estado = 404, mensaje = "Usuario no encontrado.", detalle = e.Message });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+
+    [HttpDelete("{email}")]
+    public async Task<IActionResult> Eliminar(string email)
+    {
+        try
+        {
+            var filas = await _servicio.EliminarAsync(email);
+            return Ok(new { estado = 200, mensaje = "Usuario eliminado exitosamente.", filasEliminadas = filas });
+        }
+        catch (ArgumentException e)
+        {
+            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
+        }
+        catch (NoEncontradoExcepcion e)
+        {
+            return StatusCode(404, new { estado = 404, mensaje = "Usuario no encontrado.", detalle = e.Message });
+        }
+        catch (Exception e)
+        {
+            // Con roles asignados, la FK de rol_usuario rechaza → 500:
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+
+    // ------------------------------------------------------------
+    // POST /api/usuario/verificar-contrasena — el cimiento del login
+    // ------------------------------------------------------------
+    [HttpPost("verificar-contrasena")]
+    public async Task<IActionResult> VerificarContrasena(
+        [FromQuery(Name = "valor_usuario")] string valorUsuario,
+        [FromQuery(Name = "valor_contrasena")] string valorContrasena)
+    {
+        try
+        {
+            var (codigo, mensaje) = await _servicio.VerificarContrasenaAsync(valorUsuario, valorContrasena);
+            if (codigo == 200)
+            {
+                return Ok(new { estado = 200, mensaje, usuario = valorUsuario });
+            }
+            return StatusCode(codigo, new { estado = codigo, mensaje, usuario = valorUsuario });
+        }
+        catch (ArgumentException e)
+        {
+            return StatusCode(400, new { estado = 400, mensaje = "Parámetros inválidos.", detalle = e.Message });
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, new { estado = 500, mensaje = "Error interno.", detalle = e.Message });
+        }
+    }
+}

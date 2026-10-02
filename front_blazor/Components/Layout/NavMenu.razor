@@ -1,0 +1,46 @@
+@inject MenuApp Menu
+
+@*
+   ============================================================
+   EL MENÚ. ES EL MISMO ARCHIVO en la v1 y la v2 —byte a byte—: no sabe cuántas
+   entradas hay ni cuáles. Las recorre de `MenuApp`, que el `Program.cs`
+   registra con las de su versión.
+
+   Antes estaban escritas aquí una por una, seis en la v1 y doce en la v2. Eso
+   obliga a acordarse de este archivo cada vez que llega una interfaz nueva — y
+   olvidarse no rompe nada: solo deja una interfaz que existe y nadie encuentra.
+
+   EL MENÚ NOMBRA RECURSOS DEL DOMINIO, no tablas ni rutas de la API. Dice
+   «Productos», no `/api/producto`.
+
+   Es un `navbar` de Bootstrap: en el teléfono se pliega tras el botón de las
+   tres rayas, y eso lo hace el JavaScript de Bootstrap que carga App.razor.
+   ============================================================
+*@
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-semibold" href="/">
+            <span class="text-primary">Facturas</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#menuPrincipal" aria-controls="menuPrincipal"
+                aria-expanded="false" aria-label="Abrir el menú">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menuPrincipal">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Inicio</NavLink>
+                </li>
+                @foreach (var e in Menu.Entradas)
+                {
+                    <li class="nav-item">
+                        <NavLink class="nav-link" href="@e.Ruta">@e.Texto</NavLink>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

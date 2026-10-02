@@ -70,5 +70,31 @@ services:
         # ↑ la API arranca cuando el inicializador TERMINÓ BIEN:
         #   la BD ya existe con sus 12 tablas y datos.
 
+  # ------------------------------------------------------------
+  # LA INTERFAZ GRAFICA (Blazor Server)
+  #
+  # Es un CONTENEDOR APARTE, y eso es lo que se quiere demostrar: la interfaz
+  # y la API son dos procesos distintos que se hablan por HTTP. Apague la API
+  # y la interfaz sigue en pie, con su aviso y sin una sola fila.
+  # ------------------------------------------------------------
+  front-blazor:
+    build: ./front_blazor
+    container_name: facturas-front-aysw-v1
+    ports:
+      - "8096:8096"
+    volumes:
+      # El codigo montado: `dotnet watch` recompila al guardar, sin reconstruir
+      # la imagen.
+      - ./front_blazor:/app
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://0.0.0.0:8096"
+      # El NOMBRE del servicio, no localhost: dentro del contenedor del front,
+      # localhost seria el front mismo.
+      UrlApi: "http://api-facturas:8032"
+    depends_on:
+      # NO depende de la base: el front no tiene nada que hacer con ella.
+      - api-facturas
+
 volumes:
   mssqldata:      # declaración del volumen nombrado (la "memoria" de la BD)

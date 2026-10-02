@@ -1357,33 +1357,77 @@ INSERT INTO rol (id, nombre) VALUES
 SET IDENTITY_INSERT rol OFF;
 
 -- Rutas
+-- ============================================================
+-- LOS NOMBRES DE `ruta` LLEVAN PUNTO, NO BARRA
+--
+-- Decian '/producto', '/usuario', '/permiso/crear'... y se confundian con los
+-- ENDPOINTS de la API -/api/producto-, que son OTRA COSA.
+--
+-- Esto no son rutas HTTP: son INTERFACES y ACCIONES PROTEGIBLES. Lo que la
+-- tabla guarda es «a que se puede entrar», y quien lo consume es
+-- verificar_acceso_ruta, no el enrutador de la API.
+--
+--   interfaz.productos   una interfaz grafica a la que un rol entra o no
+--   permiso.crear        una accion concreta
+--
+-- La notacion de punto no se puede leer como una URL, que es justamente el
+-- punto. El procedimiento usa el ID y no el texto, asi que el cambio no rompe
+-- nada.
+-- ============================================================
 INSERT INTO ruta (ruta, descripcion) VALUES
-(N'/home', N'Página principal - Dashboard'),
-(N'/usuario', N'Gestión de usuarios'),
-(N'/factura', N'Gestión de facturas'),
-(N'/cliente', N'Gestión de clientes'),
-(N'/vendedor', N'Gestión de vendedores'),
-(N'/persona', N'Gestión de personas'),
-(N'/empresa', N'Gestión de empresas'),
-(N'/producto', N'Gestión de productos'),
-(N'/rol', N'Gestión de roles'),
-(N'/permiso', N'Gestión de permisos (asignación rol-ruta)'),
-(N'/permiso/crear', N'Crear permiso (POST)'),
-(N'/permiso/eliminar', N'Eliminar permiso (POST)'),
-(N'/ruta', N'Gestión de rutas del sistema'),
-(N'/ruta/crear', N'Crear ruta (POST)'),
-(N'/ruta/eliminar', N'Eliminar ruta (POST)');
+(N'interfaz.inicio', N'Página principal - Dashboard'),
+(N'interfaz.usuarios', N'Gestión de usuarios'),
+(N'interfaz.facturas', N'Gestión de facturas'),
+(N'interfaz.clientes', N'Gestión de clientes'),
+(N'interfaz.vendedores', N'Gestión de vendedores'),
+(N'interfaz.personas', N'Gestión de personas'),
+(N'interfaz.empresas', N'Gestión de empresas'),
+(N'interfaz.productos', N'Gestión de productos'),
+(N'interfaz.roles', N'Gestión de roles'),
+(N'interfaz.permisos', N'Gestión de permisos (asignación rol-ruta)'),
+(N'permiso.crear', N'Crear permiso (POST)'),
+(N'permiso.eliminar', N'Eliminar permiso (POST)'),
+(N'interfaz.rutas', N'Gestión de rutas del sistema'),
+(N'ruta.crear', N'Crear ruta (POST)'),
+(N'ruta.eliminar', N'Eliminar ruta (POST)');
 
 -- Usuarios
+-- ============================================================
+-- LAS CONTRASENAS ESTAN EN TEXTO PLANO, Y ES A PROPOSITO
+--
+-- Esto esta MAL, y esta mal a proposito. Conviene leer por que antes de
+-- copiarlo a cualquier otro sitio.
+--
+-- EN ESTA VERSION NO HAY HASH. Ni en el csproj -no esta BCrypt- ni en una sola
+-- linea de codigo. El hash de la contrasena es la primera de las tres cosas
+-- que llega con LA VERSION 3, y ponerlo aqui seria anticipar: la constitucion
+-- lo prohibe, y ademas le quitaria a la v3 su primera leccion. El estudiante
+-- no veria POR QUE hay que arreglarlo si ya estuviera arreglado.
+--
+-- LO QUE LA v3 HACE CON ESTO:
+--
+--   * Vuelve a sembrar las ocho filas con BCRYPT COSTO 12, EN EL SCRIPT -no a
+--     mano: el siguiente `docker compose down -v` volveria a sembrar-.
+--   * Deja las contrasenas en claro escritas en su 7_quickstart.md, porque del
+--     hash NO SE PUEDE volver a la clave y sin saberlas no hay forma de
+--     iniciar sesion.
+--
+-- Y la columna ya esta lista: es NVARCHAR(200) y no 20, porque un hash de
+-- bcrypt ocupa 60 caracteres.
+--
+-- LO QUE SI ESTA BIEN DESDE ESTA VERSION: la API nunca devuelve la contrasena.
+-- El modelo `Usuario` tiene SOLO el email. Una respuesta no debe traer un
+-- secreto que nadie pidio, y eso vale en cualquier version.
+-- ============================================================
 INSERT INTO usuario (email, contrasena) VALUES
-(N'admin@correo.com', N'$2a$12$3UgI.Eof.FhzsYUWESI9n.qFaqkV2JPhvW3L/1GTKowNJnGaD8F.G'),
-(N'vendedor1@correo.com', N'$2a$12$Dgog4VaHqMzhliPVJy1BcOMd6.izEGNeRDtZ.O7SPmBLc6UVthVTG'),
+(N'admin@correo.com', N'admin123'),
+(N'vendedor1@correo.com', N'vendedor123'),
 (N'jefe@correo.com', N'jefe123'),
-(N'cliente1@correo.com', N'cli123'),
-(N'test_encript@correo.com', N'$2a$11$Ci0J2yBltDgQHfjadgkl0OtbcF5pUf97vTq/4Xr0KEU/86l8ybjBe'),
-(N'nuevo@correo.com', N'$2a$11$cmtGBxllwc7MCzpnKVSWuumiOgCaG6PaKWcN1z9N0bjjnkobbFDzO'),
-(N'carlos.castro@usbmed.edu.co', N'$2a$10$YYl6bHCflCnk8suUrms3ie.rnpLvfD9nHJtehZwhcSkINelGwt6iC'),
-(N'carloscastro5033@correo.itm.edu.co', N'$2a$10$YYl6bHCflCnk8suUrms3ie.rnpLvfD9nHJtehZwhcSkINelGwt6iC');
+(N'cliente1@correo.com', N'cliente123'),
+(N'test_encript@correo.com', N'test123'),
+(N'nuevo@correo.com', N'nuevo123'),
+(N'carlos.castro@usbmed.edu.co', N'carlos123'),
+(N'carloscastro5033@correo.itm.edu.co', N'carlos123');
 
 -- Clientes (con IDENTITY_INSERT para IDs explícitos)
 SET IDENTITY_INSERT cliente ON;
