@@ -68,7 +68,8 @@ public class RepositorioUsuarioSqlServer : IRepositorioUsuario
         const string sql = @"INSERT INTO usuario (email, contrasena)
                              VALUES (@email, @contrasena)";
         await using var conexion = CrearConexion();
-        await conexion.ExecuteAsync(sql, new { email, contrasena });
+        await ErroresSqlServer.TraducirAsync(
+            () => conexion.ExecuteAsync(sql, new { email, contrasena }));
     }
 
     public async Task<int> ActualizarContrasenaAsync(string email, string contrasena)
@@ -76,7 +77,8 @@ public class RepositorioUsuarioSqlServer : IRepositorioUsuario
         const string sql = @"UPDATE usuario SET contrasena = @contrasena
                              WHERE email = @email";
         await using var conexion = CrearConexion();
-        return await conexion.ExecuteAsync(sql, new { contrasena, email });
+        return await ErroresSqlServer.TraducirAsync(
+            () => conexion.ExecuteAsync(sql, new { contrasena, email }));
     }
 
     public async Task<int> EliminarAsync(string email)
@@ -84,7 +86,8 @@ public class RepositorioUsuarioSqlServer : IRepositorioUsuario
         // Si el usuario tiene roles asignados, la clave foránea lo impide.
         const string sql = "DELETE FROM usuario WHERE email = @email";
         await using var conexion = CrearConexion();
-        return await conexion.ExecuteAsync(sql, new { email });
+        return await ErroresSqlServer.TraducirAsync(
+            () => conexion.ExecuteAsync(sql, new { email }));
     }
 
     public async Task<bool?> VerificarContrasenaAsync(string email, string contrasena)

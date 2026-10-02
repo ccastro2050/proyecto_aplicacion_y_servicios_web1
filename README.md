@@ -115,23 +115,47 @@ cd proyecto_aplicacion_y_servicios_web1
 docker compose up -d --build
 ```
 
-**Eso es todo.** La primera vez tarda varios minutos (descarga imágenes,
-el inicializador crea la BD, y la primera compilación de la API toma
-~1 minuto más). Al terminar quedan corriendo la base de datos (bdfacturas
-completa en SQL Server) y la API:
+**Eso es todo.** La primera vez tarda unos minutos (descarga imágenes,
+el inicializador crea la base, y la primera compilación
+toma ~1 minuto más). Al terminar quedan corriendo **tres contenedores**: la
+base de datos, la API y la **interfaz gráfica**.
+
+### Lo primero que hay que abrir
 
 | Qué | Dónde |
 |---|---|
-| **API Facturas** — diagnóstico | http://localhost:8032/ |
-| **Swagger** (documentación interactiva: ver y probar los endpoints) | http://localhost:8032/swagger |
-| Listar productos | http://localhost:8032/api/producto |
+| **La interfaz gráfica** — por aquí se empieza | **http://localhost:8096** |
+| **Swagger** — la API, para verla y probarla | http://localhost:8032/swagger |
+| La API — diagnóstico | http://localhost:8032/ |
 | SQL Server (para SQLTools/SSMS, opcional) | `localhost,11463` · `sa`/`Paradigmas123!` |
 
-Pruebe la joya didáctica de la v1: PUT con solo `{"stock": 99}` → 422; el
-mismo body en PATCH → 200. Esa diferencia es parte de lo que enseña la
-versión (contratos exactos en el spec kit).
+> **La interfaz gráfica y la API son dos puertos distintos**, y conviene no
+> confundirlos: el **8096** es lo que se abre en el navegador; el **8032**
+> es lo que esa interfaz consume. Abrir `8096/swagger` da 404 — Swagger vive
+> en la API.
 
-> ℹ️ Este proyecto usa los puertos 8032 y 11463: si alguno ya está ocupado
+### El menú de la interfaz gráfica
+
+**Seis entradas, una por tabla sin clave foránea** — que es exactamente lo que la v1 construye:
+
+| Dirección | En el menú |
+|---|---|
+| `/productos` | Productos |
+| `/empresas` | Empresas |
+| `/personas` | Personas |
+| `/roles` | Roles |
+| `/rutas` | Rutas |
+| `/usuarios` | Usuarios |
+
+> **El menú nombra RECURSOS del dominio, no tablas ni rutas de la API.**
+> Dice «Productos», no `/api/producto`.
+
+Pruebe la joya didáctica de la v1 —en Swagger o en la propia interfaz—: un PUT
+con solo `{"stock": 99}` responde **422**; el mismo cuerpo en PATCH responde
+**200**.
+
+> ℹ️ Este proyecto usa los puertos **8096** (interfaz gráfica), **8032**
+> (API) y **11463** (SQL Server): si alguno ya está ocupado
 > en su máquina, cámbielo en `docker-compose.yml` (el lado izquierdo del
 > `"puerto:puerto"`).
 >
