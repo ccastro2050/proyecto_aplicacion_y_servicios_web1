@@ -136,7 +136,7 @@ public class ServicioProducto(HttpClient cliente)
         }
     }
 
-    public async Task<Resultado<bool>> RetirarAsync(string codigo)
+    public async Task<Resultado<bool>> EliminarAsync(string codigo)
     {
         try
         {
